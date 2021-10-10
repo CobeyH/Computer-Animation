@@ -23,6 +23,8 @@
 #include "myScene.h"
 #include "SampleParticle.h"
 #include "SampleGravitySimulator.h"
+#include "ParticleSystem.h"
+#include "ParticleSim.h"
 //#include <util/jama/tnt_stopwatch.h>
 //#include <util/jama/jama_lu.h>
 
@@ -95,44 +97,22 @@ void MakeScene(void)
 	bool success;
 
 	// register a system
-	SampleParticle* sphere1 = new SampleParticle( "sphere1" );
+	ParticleSystem* partSym = new ParticleSystem( "partSym" );
 
-	success = GlobalResourceManager::use()->addSystem( sphere1, true );
+	success = GlobalResourceManager::use()->addSystem( partSym, true );
 
 	// make sure it was registered successfully
 	assert( success );
 
 	// register a simulator
-	SampleGravitySimulator* gravitySimulator = 
-		new SampleGravitySimulator( "gravity", sphere1 );
+	ParticleSim* partSim = new ParticleSim( "partSim", partSym );
 
-	success = GlobalResourceManager::use()->addSimulator( gravitySimulator );
+	success = GlobalResourceManager::use()->addSimulator( partSim );
 
 	// make sure it was registered successfully
 	assert( success );
 
 	/* END SAMPLE SCENE */
-
-	// the following code shows you how to retrieve a system that was registered 
-	// with the resource manager. 
-
-	BaseSystem* sampleSystemRetrieval;
-
-	// retrieve the system
-	sampleSystemRetrieval = 
-		GlobalResourceManager::use()->getSystem( "sphere1" );
-
-	// make sure you got it
-	assert( sampleSystemRetrieval );
-
-	BaseSimulator* sampleSimulatorRetrieval;
-
-	// retrieve the simulator
-	sampleSimulatorRetrieval = 
-		GlobalResourceManager::use()->getSimulator( "gravity" );
-
-	// make sure you got it
-	assert( sampleSimulatorRetrieval );
 
 }	// MakeScene
 
