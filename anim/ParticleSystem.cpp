@@ -1,4 +1,5 @@
 #include "ParticleSystem.h"
+#include "States.h"
 
 ParticleSystem::ParticleSystem(const std::string& name) : BaseSystem(name) {
 
@@ -11,6 +12,7 @@ void ParticleSystem::generateInitalParticles(double numParticles) {
 		Particle* newParticle = new Particle(initalValues, initalValues, 0);
 		particles.push_back(*newParticle);
 	}
+	glutPostRedisplay();
 }
 
 void ParticleSystem::updateParticle(int index, Vector pos, Vector vel, double mass) {
@@ -28,9 +30,16 @@ void ParticleSystem::updateAllVelocities(Vector newVelocity) {
 }
 
 void ParticleSystem::getState(double* p) {
+
 };
 
 void ParticleSystem::setState(double* p) {
+	ParticleLock* lock = (ParticleLock*)p;
+	if (particles.size() <= lock->index) {
+		animTcl::OutputMessage("Failed to fix particle. Specified index does not exist");
+		return;
+	}
+	particles[lock->index].locked = lock->shouldLock;
 };
 
 void ParticleSystem::reset(double time) {
@@ -53,9 +62,17 @@ int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
 		return TCL_ERROR;
 	}
 	else if (strcmp(argv[0], "dim") == 0) {
+		if (argc != 2) {
+			animTcl::OutputMessage("Invalid arguments passed. Expeced 2 arguments but got %d", argc);
+			return TCL_ERROR;
+		}
 		generateInitalParticles(atof(argv[1]));
 	}
 	else if (strcmp(argv[0], "particle") == 0) {
+		if (argc != 9) {
+			animTcl::OutputMessage("Invalid arguments passed. Expeced 9 arguments but got %d", argc);
+			return TCL_ERROR;
+		}
 		int index = atoi(argv[1]);
 		double mass = atof(argv[2]);
 		double posX = atof(argv[3]);
@@ -76,5 +93,9 @@ int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
 		double velZ = atof(argv[3]);
 		Vector velocity;
 		updateAllVelocities(velocity);
+	}
+	else {
+		animTcl::OutputMessage("The provided command is not supported. Please check your spelling and try again");
+		return TCL_ERROR;
 	}
 };

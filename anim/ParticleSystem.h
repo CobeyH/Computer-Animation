@@ -1,17 +1,7 @@
 #pragma once
 #include "BaseSystem.h"
+#include "States.h"
 #include <vector>
-
-struct Particle {
-	Particle(Vector initalPos, Vector initalVel, double particleMass) {
-		VecCopy(position, initalPos);
-		VecCopy(velocity, initalVel);
-		mass = particleMass;
-	}
-	Vector position;
-	Vector velocity;
-	double mass;
-};
 
 class ParticleSystem : public BaseSystem {
 public:
