@@ -1,6 +1,6 @@
 #include "ParticleSim.h"
 
-ParticleSim::ParticleSim(const std::string& name, BaseSystem* target): BaseSimulator(name),
+ParticleSim::ParticleSim(const std::string& name, BaseSystem* target) : BaseSimulator(name),
 m_object(target) {
 };
 

@@ -36,8 +36,8 @@
 int g_testVariable = 10;
 
 SETVAR myScriptVariables[] = {
-	"testVariable", TCL_LINK_INT, (char *) &g_testVariable,
-	"",0,(char *) NULL
+	"testVariable", TCL_LINK_INT, (char*)&g_testVariable,
+	"",0,(char*)NULL
 };
 
 
@@ -51,18 +51,18 @@ void myMouse(int button, int state, int x, int y)
 
 	// let the global resource manager know about the new state of the mouse 
 	// button
-	GlobalResourceManager::use()->setMouseButtonInfo( button, state );
+	GlobalResourceManager::use()->setMouseButtonInfo(button, state);
 
-	if( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN )
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 		animTcl::OutputMessage(
 			"My mouse received a mouse button press event\n");
 
 	}
-	if( button == GLUT_LEFT_BUTTON && state == GLUT_UP )
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
 		animTcl::OutputMessage(
-			"My mouse received a mouse button release event\n") ;
+			"My mouse received a mouse button release event\n");
 	}
 }	// myMouse
 
@@ -70,13 +70,13 @@ void myMouse(int button, int state, int x, int y)
 void myMotion(int x, int y)
 {
 
-	GLMouseButtonInfo updatedMouseButtonInfo = 
+	GLMouseButtonInfo updatedMouseButtonInfo =
 		GlobalResourceManager::use()->getMouseButtonInfo();
 
-	if( updatedMouseButtonInfo.button == GLUT_LEFT_BUTTON )
+	if (updatedMouseButtonInfo.button == GLUT_LEFT_BUTTON)
 	{
 		animTcl::OutputMessage(
-			"My mouse motion callback received a mousemotion event\n") ;
+			"My mouse motion callback received a mousemotion event\n");
 	}
 
 }	// myMotion
@@ -85,9 +85,9 @@ void myMotion(int x, int y)
 void MakeScene(void)
 {
 
-	/* 
-	
-	This is where you instantiate all objects, systems, and simulators and 
+	/*
+
+	This is where you instantiate all objects, systems, and simulators and
 	register them with the global resource manager
 
 	*/
@@ -97,20 +97,20 @@ void MakeScene(void)
 	bool success;
 
 	// register a system
-	ParticleSystem* partSym = new ParticleSystem( "partSys" );
+	ParticleSystem* partSym = new ParticleSystem("partSys");
 
-	success = GlobalResourceManager::use()->addSystem( partSym, true );
+	success = GlobalResourceManager::use()->addSystem(partSym, true);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
 
 	// register a simulator
-	ParticleSim* partSim = new ParticleSim( "partSim", partSym );
+	ParticleSim* partSim = new ParticleSim("partSim", partSym);
 
-	success = GlobalResourceManager::use()->addSimulator( partSim );
+	success = GlobalResourceManager::use()->addSimulator(partSim);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
 
 	/* END SAMPLE SCENE */
 
@@ -125,33 +125,33 @@ void myOpenGLInit(void)
 
 void myIdleCB(void)
 {
-	
+
 	return;
 
 }	// myIdleCB
 
 void myKey(unsigned char key, int x, int y)
 {
-	 animTcl::OutputMessage("My key callback received a key press event\n");
+	animTcl::OutputMessage("My key callback received a key press event\n");
 	return;
 
 }	// myKey
 
-static int testGlobalCommand(ClientData clientData, Tcl_Interp *interp, int argc, myCONST_SPEC char **argv)
+static int testGlobalCommand(ClientData clientData, Tcl_Interp* interp, int argc, myCONST_SPEC char** argv)
 {
-	 animTcl::OutputMessage("This is a test command!");
-    animTcl::OutputResult("100") ;
+	animTcl::OutputMessage("This is a test command!");
+	animTcl::OutputResult("100");
 	return TCL_OK;
 
 }	// testGlobalCommand
 
-void mySetScriptCommands(Tcl_Interp *interp)
+void mySetScriptCommands(Tcl_Interp* interp)
 {
 
 	// here you can register additional generic (they do not belong to any object) 
 	// commands with the shell
 
-	Tcl_CreateCommand(interp, "test", testGlobalCommand, (ClientData) NULL,
-					  (Tcl_CmdDeleteProc *)	NULL);
+	Tcl_CreateCommand(interp, "test", testGlobalCommand, (ClientData)NULL,
+		(Tcl_CmdDeleteProc*)NULL);
 
 }	// mySetScriptCommands

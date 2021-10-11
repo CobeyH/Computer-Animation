@@ -1,7 +1,7 @@
 #include "ParticleSystem.h"
 
-ParticleSystem::ParticleSystem(const std::string& name): BaseSystem(name) {
-	
+ParticleSystem::ParticleSystem(const std::string& name) : BaseSystem(name) {
+
 };
 
 void ParticleSystem::generateInitalParticles(double numParticles) {
@@ -64,7 +64,7 @@ int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
 		double velX = atof(argv[6]);
 		double velY = atof(argv[7]);
 		double velZ = atof(argv[8]);
-		
+
 		Vector position, velocity;
 		setVector(position, posX, posY, posZ);
 		setVector(velocity, velX, velY, velZ);
