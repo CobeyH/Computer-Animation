@@ -97,7 +97,7 @@ void MakeScene(void)
 	bool success;
 
 	// register a system
-	ParticleSystem* partSym = new ParticleSystem( "partSym" );
+	ParticleSystem* partSym = new ParticleSystem( "partSys" );
 
 	success = GlobalResourceManager::use()->addSystem( partSym, true );
 

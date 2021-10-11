@@ -10,4 +10,4 @@ int ParticleSim::step(double time) {
 
 int ParticleSim::command(int argc, myCONST_SPEC char** argv) {
 	return -1;
-	};
+};
