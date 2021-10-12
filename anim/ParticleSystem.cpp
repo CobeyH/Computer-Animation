@@ -24,13 +24,14 @@ void ParticleSystem::updateParticle(int index, Vector pos, Vector vel, double ma
 };
 
 void ParticleSystem::updateAllVelocities(Vector newVelocity) {
-	for (Particle p : particles) {
-		VecCopy(p.velocity, newVelocity);
+	for(int i = 0; i < particles.size(); i++) {
+		VecCopy(particles[i].velocity, newVelocity);
 	}
 }
 
 void ParticleSystem::getState(double* p) {
-
+	ParticleState* state = (ParticleState*) p;
+	state->particles = &particles;
 };
 
 void ParticleSystem::setState(double* p) {
@@ -43,6 +44,7 @@ void ParticleSystem::setState(double* p) {
 };
 
 void ParticleSystem::reset(double time) {
+
 };
 
 void ParticleSystem::display(GLenum mode) {
@@ -92,6 +94,7 @@ int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
 		double velY = atof(argv[2]);
 		double velZ = atof(argv[3]);
 		Vector velocity;
+		setVector(velocity, velX, velY, velZ);
 		updateAllVelocities(velocity);
 	}
 	else {

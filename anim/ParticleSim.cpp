@@ -3,10 +3,48 @@
 
 ParticleSim::ParticleSim(const std::string& name, BaseSystem* target) : BaseSimulator(name),
 m_object(target) {
+	prevTime = 0;
+	globalForce = new GlobalForces();
 };
 
 int ParticleSim::step(double time) {
+	ParticleState* state = new ParticleState();
+	double deltaTime = time - prevTime;
+	m_object->getState((double*)state);
+	for (auto it = state->particles->begin(); it != state->particles->end(); ++it) {
+		if (it->locked) {
+			continue;
+		}
+		Vector moveOffset;
+		// Calculate displacement
+		VecCopy(moveOffset, it->velocity);
+		VecScale(moveOffset, deltaTime);
+		// Add displacement to current position
+		VecAdd(it->position, it->position, moveOffset);
+	}
+	m_object->display();
+	prevTime = time;
 	return -1;
+};
+
+void ParticleSim::calculateSpringForce(Vector sForce) {
+	zeroVector(sForce);
+}
+
+void ParticleSim::calculateDragForce(Vector dForce) {
+	zeroVector(dForce);
+}
+
+void ParticleSim::calculateGravityForce(Vector gravForce) {
+	zeroVector(gravForce);
+}
+
+void ParticleSim::calculateGroundForces(Vector groundForce) {
+	zeroVector(groundForce);
+};
+
+void ParticleSim::calculateNetForces(Particle* p) {
+	
 };
 
 void ParticleSim::addSpring(int start, int end, double ks, double kd, double restLength) {

@@ -1,9 +1,5 @@
 #pragma once
-
-struct ParticleLock {
-	int index;
-	bool shouldLock;
-};
+#include <vector>
 
 struct Particle {
 	Particle(Vector initalPos, Vector initalVel, double particleMass) {
@@ -14,16 +10,26 @@ struct Particle {
 	}
 	Vector position;
 	Vector velocity;
+	Vector forces;
 	double mass;
 	bool locked;
 };
 
+struct ParticleState {
+	std::vector<Particle>* particles;
+};
+
+struct ParticleLock {
+	int index;
+	bool shouldLock;
+};
+
 struct Spring {
-	Spring(int start, int end, double sConstant, double sDisplacement, double length) {
+	Spring(int start, int end, double sConstant, double kDrag, double length) {
 		startPoint = start;
 		endPoint = end;
 		ks = sConstant;
-		kd = sDisplacement;
+		kd = kDrag;
 		restLength = length;
 	}
 	int startPoint;
