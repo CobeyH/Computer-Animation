@@ -9,6 +9,7 @@ struct Particle {
 		locked = false;
 	}
 	Vector position;
+	Vector initalPosition;
 	Vector velocity;
 	Vector forces;
 	double mass;

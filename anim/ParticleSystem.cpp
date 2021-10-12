@@ -18,6 +18,7 @@ void ParticleSystem::generateInitalParticles(double numParticles) {
 void ParticleSystem::updateParticle(int index, Vector pos, Vector vel, double mass) {
 	Particle* p = &particles[index];
 	VecCopy(p->position, pos);
+	VecCopy(p->initalPosition, pos);
 	VecCopy(p->velocity, vel);
 	p->mass = mass;
 	glutPostRedisplay();
@@ -44,7 +45,13 @@ void ParticleSystem::setState(double* p) {
 };
 
 void ParticleSystem::reset(double time) {
-
+	for (int i = 0; i < particles.size(); i++) {
+		VecCopy(particles[i].position, particles[i].initalPosition);
+		zeroVector(particles[i].forces);
+	}
+	Vector zeroVel;
+	zeroVector(zeroVel);
+	updateAllVelocities(zeroVel);
 };
 
 void ParticleSystem::display(GLenum mode) {

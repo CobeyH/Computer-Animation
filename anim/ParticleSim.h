@@ -4,6 +4,12 @@
 #include "States.h"
 #include <vector>
 
+enum IntegrationMethod {
+	Euler,
+	Symplectic,
+	Verlet
+};
+
 struct GlobalForces {
 	GlobalForces() {
 		gravity = 0;
@@ -24,6 +30,8 @@ public:
 	int step(double time);
 	int init(double time)
 	{
+		mode = Euler;
+		prevTime = 0;
 		return 0;
 	};
 
@@ -32,14 +40,16 @@ protected:
 	double prevTime;
 	std::vector<Spring> springs;
 	GlobalForces* globalForce;
+	IntegrationMethod mode;
 	int maxSprings;
 	BaseSystem* m_object;
 	void addSpring(int start, int end, double ks, double kd, double restLength);
-	void calculateDragForce(Vector dForce);
-	void calculateGravityForce(Vector gravForce);
-	void calculateSpringForce(Vector sForce);
+	void calculateDragForce(Vector dForce, Vector velocity);
+	void calculateGravityForce(Vector gravForce, double mass);
+	void calculateSpringForce(Vector sForce, int index);
 	void calculateGroundForces(Vector groundForce);
-	void calculateNetForces(Particle* p);
+	void calculateNetForces(Vector netForce, Particle* p, int index);
+	void setIntegrationMode(char* newMode);
 };
 
 
