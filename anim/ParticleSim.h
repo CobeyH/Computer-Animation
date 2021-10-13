@@ -31,24 +31,24 @@ public:
 	int init(double time)
 	{
 		mode = Euler;
-		prevTime = 0;
+		prevTime = time;
 		return 0;
 	};
 
 	int command(int argc, myCONST_SPEC char** argv);
 protected:
 	double prevTime;
-	std::vector<Spring> springs;
 	GlobalForces* globalForce;
 	IntegrationMethod mode;
 	int maxSprings;
+	int springCount;
 	BaseSystem* m_object;
 	void addSpring(int start, int end, double ks, double kd, double restLength);
 	void calculateDragForce(Vector dForce, Vector velocity);
 	void calculateGravityForce(Vector gravForce, double mass);
-	void calculateSpringForce(Vector sForce, int index);
+	void calculateNetSpringForce(Vector sForce, Particle* p);
 	void calculateGroundForces(Vector groundForce);
-	void calculateNetForces(Vector netForce, Particle* p, int index);
+	void calculateNetForces(Vector netForce, Particle* p);
 	void setIntegrationMode(char* newMode);
 };
 

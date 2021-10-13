@@ -36,18 +36,27 @@ void ParticleSystem::getState(double* p) {
 };
 
 void ParticleSystem::setState(double* p) {
-	ParticleLock* lock = (ParticleLock*)p;
-	if (particles.size() <= lock->index) {
-		animTcl::OutputMessage("Failed to fix particle. Specified index does not exist");
-		return;
+	UpdateState* update = (UpdateState*)p;
+	switch (update->mode) {
+		case Lock:
+			if (particles.size() <= update->index) {
+				animTcl::OutputMessage("Failed to fix particle. Specified index does not exist");
+				return;
+			}
+			particles[update->index].locked = update->shouldLock;
+			break;
+		case NewSpring:
+			// Add spring connection to correct particle
+			Spring* newSpring = update->spring;
+			particles.at(update->index).connectedSprings.push_back(*newSpring);
+			break;
 	}
-	particles[lock->index].locked = lock->shouldLock;
+	
 };
 
 void ParticleSystem::reset(double time) {
 	for (int i = 0; i < particles.size(); i++) {
 		VecCopy(particles[i].position, particles[i].initalPosition);
-		zeroVector(particles[i].forces);
 	}
 	Vector zeroVel;
 	zeroVector(zeroVel);
@@ -57,9 +66,17 @@ void ParticleSystem::reset(double time) {
 void ParticleSystem::display(GLenum mode) {
 	glPointSize(3);
 	glBegin(GL_POINTS);
-	glColor3f(1.0, 0, 0);
 	for (Particle p : particles) {
 		glVertex3dv(p.position);
+	}
+	glEnd();
+	glBegin(GL_LINES);
+	//TODO: Remove duplicate lines
+	for (Particle p : particles) {
+		for (Spring s : p.connectedSprings) {
+			glVertex3dv(p.position);
+			glVertex3dv(s.endPoint->position);
+		}
 	}
 	glEnd();
 };
