@@ -43,7 +43,7 @@ int ParticleSim::step(double time) {
 
 void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
 	zeroVector(netSpringForce);
-	for (Spring s: p->connectedSprings) {
+	for (Spring s : p->connectedSprings) {
 		Vector isubj, unitVec, springVec;
 		VecSubtract(isubj, p->position, s.endPoint->position);
 		double vecLength = VecLength(isubj);
@@ -175,8 +175,16 @@ int ParticleSim::command(int argc, myCONST_SPEC char** argv) {
 		}
 		globalForce->drag = atof(argv[1]);
 	}
+	else if (strcmp(argv[0], "ground") == 0) {
+		if (argc != 3) {
+			animTcl::OutputMessage("Invalid arguments passed. Expeced 3 arguments but got %d", argc);
+			return TCL_ERROR;
+		}
+		globalForce->groundForce = atof(argv[1]);
+		globalForce->groundDamp = atof(argv[2]);
+	}
 	else {
-		animTcl::OutputMessage("The given command is not valid");
+		animTcl::OutputMessage("The given command %s is not valid", argv[1]);
 	}
 };
 
