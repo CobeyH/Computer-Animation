@@ -20,6 +20,7 @@ void ParticleSystem::updateParticle(int index, Vector pos, Vector vel, double ma
 	VecCopy(p->position, pos);
 	VecCopy(p->initalPosition, pos);
 	VecCopy(p->velocity, vel);
+	VecCopy(p->initalVelocity, vel);
 	p->mass = mass;
 	glutPostRedisplay();
 };
@@ -57,10 +58,8 @@ void ParticleSystem::setState(double* p) {
 void ParticleSystem::reset(double time) {
 	for (int i = 0; i < particles.size(); i++) {
 		VecCopy(particles[i].position, particles[i].initalPosition);
+		VecCopy(particles[i].velocity, particles[i].initalVelocity);
 	}
-	Vector zeroVel;
-	zeroVector(zeroVel);
-	updateAllVelocities(zeroVel);
 };
 
 void ParticleSystem::display(GLenum mode) {
@@ -78,6 +77,13 @@ void ParticleSystem::display(GLenum mode) {
 			glVertex3dv(s.endPoint->position);
 		}
 	}
+	glEnd();
+
+	glBegin(GL_QUADS);
+	glVertex3d(10, 0, 10);
+	glVertex3d(10, 0, -10);
+	glVertex3d(-10, 0, -10);
+	glVertex3d(-10, 0, 10);
 	glEnd();
 };
 

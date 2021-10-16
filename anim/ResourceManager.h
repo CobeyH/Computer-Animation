@@ -64,6 +64,7 @@ public:
 
 	void setActualTime( double time );
 	double getActualTime() const;
+	void setNewTimestep(double stepSize);
 
 	// core methods
 
@@ -87,6 +88,7 @@ private:
 	ListOfSystems m_systemList;
 	ListOfSimulators m_simulatorList;
 
+	double customTimestep;
 	double m_simulationTime;
 	double m_actualTime;
 

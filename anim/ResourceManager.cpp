@@ -2,6 +2,7 @@
 
 ResourceManager::ResourceManager(void)
 {
+	customTimestep = SIMULATION_TIME_STEP;
 }
 
 ResourceManager::~ResourceManager(void)
@@ -279,17 +280,21 @@ double ResourceManager::getActualTime() const
 
 }	// ResourceManager::getActualTime
 
+void ResourceManager::setNewTimestep(double stepSize) {
+	customTimestep = stepSize;
+}
+
 void ResourceManager::advanceSimulationTime( double timeStep )
 {
 
-	m_simulationTime += timeStep;
+	m_simulationTime += customTimestep;
 
 }	// ResourceManager::advanceSimulationTime
 
 void ResourceManager::advanceActualTime( double timeStep )
 {
 
-	m_actualTime += timeStep;
+	m_actualTime += customTimestep;
 
 }	// ResourceManager::advanceActualTime
 

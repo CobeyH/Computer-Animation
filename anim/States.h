@@ -6,13 +6,17 @@ struct Spring;
 struct Particle {
 	Particle(Vector initalPos, Vector initalVel, double particleMass) {
 		VecCopy(position, initalPos);
+		VecCopy(prevPos, initalPos);
 		VecCopy(velocity, initalVel);
+		VecCopy(initalVelocity, initalVel);
 		mass = particleMass;
 		locked = false;
 	}
 	Vector position;
 	Vector initalPosition;
+	Vector prevPos;
 	Vector velocity;
+	Vector initalVelocity;
 	double mass;
 	bool locked;
 	std::vector<Spring> connectedSprings;

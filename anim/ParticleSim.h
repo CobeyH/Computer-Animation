@@ -44,10 +44,14 @@ protected:
 	int springCount;
 	BaseSystem* m_object;
 	void addSpring(int start, int end, double ks, double kd, double restLength);
+	// Position update functions
+	void getAcceleration(double deltaTime, Vector acceleration, Particle* p);
+	void getPositionOffset(double deltaTime, Vector moveOffset, Particle* p);
+	// Force Calculations
 	void calculateDragForce(Vector dForce, Vector velocity);
 	void calculateGravityForce(Vector gravForce, double mass);
 	void calculateNetSpringForce(Vector sForce, Particle* p);
-	void calculateGroundForces(Vector groundForce);
+	void calculateGroundForces(Vector groundForce, Particle* p);
 	void calculateNetForces(Vector netForce, Particle* p);
 	void setIntegrationMode(char* newMode);
 };
