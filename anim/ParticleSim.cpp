@@ -1,6 +1,8 @@
 #include "ParticleSim.h"
 #include "States.h"
 #include "GlobalResourceManager.h"
+#include <math.h>
+#include <iomanip> 
 
 ParticleSim::ParticleSim(const std::string& name, BaseSystem* target) : BaseSimulator(name), m_object(target) {
 	globalForce = new GlobalForces();
@@ -81,6 +83,10 @@ void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
 		VecCopy(springVec, unitVec);
 		// Spring Force
 		double lengthDiff = s.restLength - vecLength;
+		// Account for double precision
+		if (lengthDiff < 0.000001) {
+			continue;
+		}
 		VecScale(springVec, lengthDiff);
 		VecScale(springVec, s.ks);
 		VecAdd(netSpringForce, netSpringForce, springVec);
@@ -92,7 +98,6 @@ void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
 		VecCopy(dampVec, unitVec);
 		VecScale(dampVec, velScalar);
 		VecAdd(netSpringForce, netSpringForce, dampVec);
-
 	}
 }
 
