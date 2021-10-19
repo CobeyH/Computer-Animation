@@ -84,15 +84,19 @@ void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
 		// Spring Force
 		double lengthDiff = s.restLength - vecLength;
 		// Account for double precision
-		if (lengthDiff < 0.000001) {
-			continue;
+		if (fabs(lengthDiff) < 0.00001) {
+			zeroVector(springVec);
+		} else {
+			VecScale(springVec, lengthDiff);
+			VecScale(springVec, s.ks);
 		}
-		VecScale(springVec, lengthDiff);
-		VecScale(springVec, s.ks);
 		VecAdd(netSpringForce, netSpringForce, springVec);
 		// Spring Damping
 		Vector velDiff, dampVec;
 		VecSubtract(velDiff, p->velocity, s.endPoint->velocity);
+		if(VecLength(velDiff) < 0.00001) {
+			continue;
+		}
 		double velScalar = VecDotProd(velDiff, unitVec);
 		velScalar *= -s.kd;
 		VecCopy(dampVec, unitVec);
