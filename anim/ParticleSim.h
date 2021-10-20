@@ -50,7 +50,7 @@ protected:
 	// Force Calculations
 	void calculateDragForce(Vector dForce, Vector velocity);
 	void calculateGravityForce(Vector gravForce, double mass);
-	void calculateNetSpringForce(Vector sForce, Particle* p);
+	void calculateNetSpringForce(Particle* p);
 	void calculateGroundForces(Vector groundForce, Particle* p);
 	void calculateNetForces(Vector netForce, Particle* p);
 	void setIntegrationMode(char* newMode);

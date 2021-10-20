@@ -9,6 +9,7 @@ struct Particle {
 		VecCopy(prevPos, initalPos);
 		VecCopy(velocity, initalVel);
 		VecCopy(initalVelocity, initalVel);
+		zeroVector(externalSpringForce);
 		mass = particleMass;
 		locked = false;
 	}
@@ -20,6 +21,7 @@ struct Particle {
 	double mass;
 	bool locked;
 	std::vector<Spring> connectedSprings;
+	Vector externalSpringForce;
 };
 
 struct Spring {

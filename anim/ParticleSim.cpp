@@ -17,7 +17,13 @@ int ParticleSim::step(double time) {
 		deltaTime = time;
 	}
 	m_object->getState((double*)state);
+	// Calculate spring forces
+	for (auto it = state->particles->begin(); it != state->particles->end(); ++it) {
+		// Spring forces
+		calculateNetSpringForce(&(*it));
+	}
 	// Update particle positions
+	
 	for (auto it = state->particles->begin(); it != state->particles->end(); ++it) {
 		if (it->locked) {
 			continue;
@@ -72,10 +78,11 @@ void ParticleSim::getAcceleration(double deltaTime, Vector acceleration, Particl
 	VecScale(acceleration, deltaTime);
 }
 
-void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
-	zeroVector(netSpringForce);
+void ParticleSim::calculateNetSpringForce(Particle* p) {
 	for (Spring s : p->connectedSprings) {
-		Vector isubj, unitVec, springVec;
+		//animTcl::OutputMessage("Point %f %f %f", p->position[0], p->position[1], p->position[2]);
+		Vector isubj, unitVec, springVec, netSpringForce;
+		zeroVector(netSpringForce);
 		VecSubtract(isubj, p->position, s.endPoint->position);
 		double vecLength = VecLength(isubj);
 		VecCopy(unitVec, isubj);
@@ -83,25 +90,28 @@ void ParticleSim::calculateNetSpringForce(Vector netSpringForce, Particle* p) {
 		VecCopy(springVec, unitVec);
 		// Spring Force
 		double lengthDiff = s.restLength - vecLength;
+		double springScalar = lengthDiff * s.ks;
 		// Account for double precision
-		if (fabs(lengthDiff) < 0.00001) {
-			zeroVector(springVec);
-		} else {
-			VecScale(springVec, lengthDiff);
-			VecScale(springVec, s.ks);
-		}
+		//if (fabs(lengthDiff) < 0.00001) {
+		//	zeroVector(springVec);
+		//} else {
+			VecScale(springVec, springScalar);
+		//}
 		VecAdd(netSpringForce, netSpringForce, springVec);
 		// Spring Damping
 		Vector velDiff, dampVec;
 		VecSubtract(velDiff, p->velocity, s.endPoint->velocity);
-		if(VecLength(velDiff) < 0.00001) {
-			continue;
-		}
-		double velScalar = VecDotProd(velDiff, unitVec);
-		velScalar *= -s.kd;
-		VecCopy(dampVec, unitVec);
-		VecScale(dampVec, velScalar);
-		VecAdd(netSpringForce, netSpringForce, dampVec);
+		//if(VecLength(velDiff) >= 0.00001) {
+			double velScalar = VecDotProd(velDiff, unitVec);
+			velScalar *= -s.kd;
+			VecCopy(dampVec, unitVec);
+			VecScale(dampVec, velScalar);
+			VecAdd(netSpringForce, netSpringForce, dampVec);
+		//}
+		// Add the net spring force to the connected particles
+		VecAdd(p->externalSpringForce, p->externalSpringForce, netSpringForce);
+		VecScale(netSpringForce, -1);
+		VecAdd(s.endPoint->externalSpringForce, s.endPoint->externalSpringForce, netSpringForce);
 	}
 }
 
@@ -151,9 +161,9 @@ void ParticleSim::calculateNetForces(Vector netForce, Particle* p) {
 	// Drag Force
 	calculateDragForce(dForce, p->velocity);
 	VecAdd(netForce, netForce, dForce);
-	// Spring forces
-	calculateNetSpringForce(sForce, p);
-	VecAdd(netForce, netForce, sForce);
+	// Spring Force
+	VecAdd(netForce, netForce, p->externalSpringForce);
+	zeroVector(p->externalSpringForce);
 };
 
 void ParticleSim::addSpring(int start, int end, double ks, double kd, double restLength) {
@@ -168,11 +178,6 @@ void ParticleSim::addSpring(int start, int end, double ks, double kd, double res
 	UpdateState* springUpdate = new UpdateState(NewSpring);
 	springUpdate->spring = spring1;
 	springUpdate->index = start;
-	m_object->setState((double*)springUpdate);
-
-	Spring* spring2 = new Spring(&state->particles->at(start), ks, kd, restLength);
-	springUpdate->spring = spring2;
-	springUpdate->index = end;
 	m_object->setState((double*)springUpdate);
 }
 

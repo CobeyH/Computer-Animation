@@ -59,6 +59,7 @@ void ParticleSystem::reset(double time) {
 	for (int i = 0; i < particles.size(); i++) {
 		VecCopy(particles[i].position, particles[i].initalPosition);
 		VecCopy(particles[i].velocity, particles[i].initalVelocity);
+		zeroVector(particles[i].externalSpringForce);
 	}
 };
 
@@ -69,8 +70,9 @@ void ParticleSystem::display(GLenum mode) {
 		glVertex3dv(p.position);
 	}
 	glEnd();
+
+	// Springs
 	glBegin(GL_LINES);
-	//TODO: Remove duplicate lines
 	for (Particle p : particles) {
 		for (Spring s : p.connectedSprings) {
 			glVertex3dv(p.position);
@@ -79,12 +81,13 @@ void ParticleSystem::display(GLenum mode) {
 	}
 	glEnd();
 
-	glBegin(GL_QUADS);
-	glVertex3d(10, 0, 10);
-	glVertex3d(10, 0, -10);
-	glVertex3d(-10, 0, -10);
-	glVertex3d(-10, 0, 10);
-	glEnd();
+	// Ground
+	//glBegin(GL_QUADS);
+	//glVertex3d(10, 0, 10);
+	//glVertex3d(10, 0, -10);
+	//glVertex3d(-10, 0, -10);
+	//glVertex3d(-10, 0, 10);
+	//glEnd();
 };
 
 int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
