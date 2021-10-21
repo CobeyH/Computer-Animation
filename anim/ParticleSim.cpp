@@ -31,7 +31,6 @@ int ParticleSim::step(double time) {
 		// Calculate acceleration for next step
 		Vector acceleration, moveOffset;
 		getAcceleration(deltaTime, acceleration, &(*it));
-
 		switch (mode) {
 			case Euler:
 				getPositionOffset(deltaTime, moveOffset, &(*it));
@@ -44,6 +43,12 @@ int ParticleSim::step(double time) {
 				VecAdd(it->position, it->position, moveOffset);
 				break;
 			case Verlet:
+				if (time == 0) {
+					Vector fakePrev;
+					VecCopy(fakePrev, it->initalVelocity);
+					VecScale(fakePrev, deltaTime);
+					VecSubtract(it->prevPos, it->position, fakePrev);
+				}
 				Vector forwardPos, velTemp;
 				VecCopy(forwardPos, it->position);
 				VecScale(forwardPos, 2);

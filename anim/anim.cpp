@@ -31,7 +31,7 @@ BallData *g_arcball = NULL ;
 
 int g_width = 500 ;
 int g_height = 500 ;
-float g_zoom = 1 ;
+float g_zoom = 0.5 ;
 int g_prevY = 0 ;
 
 int g_state = STATE_IDLE ;
@@ -46,7 +46,6 @@ void instructions();
 #define Z 2
 
 // The eye point and look-at point.
-//
 double g_eye[3] = {0, 0.0, 50.0};
 double g_ref[3] = {0.0, 0.0, 0.0};
 

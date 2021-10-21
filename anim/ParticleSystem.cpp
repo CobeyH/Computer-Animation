@@ -82,12 +82,12 @@ void ParticleSystem::display(GLenum mode) {
 	glEnd();
 
 	// Ground
-	//glBegin(GL_QUADS);
-	//glVertex3d(10, 0, 10);
-	//glVertex3d(10, 0, -10);
-	//glVertex3d(-10, 0, -10);
-	//glVertex3d(-10, 0, 10);
-	//glEnd();
+	glBegin(GL_QUADS);
+	glVertex3d(10, 0, 10);
+	glVertex3d(10, 0, -10);
+	glVertex3d(-10, 0, -10);
+	glVertex3d(-10, 0, 10);
+	glEnd();
 };
 
 int ParticleSystem::command(int argc, myCONST_SPEC char** argv) {
