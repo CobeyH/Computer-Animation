@@ -21,10 +21,10 @@
 #include "anim.h"
 #include "animTcl.h"
 #include "myScene.h"
-#include "SampleParticle.h"
-#include "SampleGravitySimulator.h"
-//#include <util/jama/tnt_stopwatch.h>
-//#include <util/jama/jama_lu.h>
+#include "IKSimulator.h"
+#include "HumanModel.h"
+#include "Classroom.h"
+#include "Eigen/Dense"
 
 // register a sample variable with the shell.
 // Available types are:
@@ -65,8 +65,7 @@ void myMouse(int button, int state, int x, int y)
 }	// myMouse
 
 // interaction (mouse motion)
-void myMotion(int x, int y)
-{
+void myMotion(int x, int y) {
 
 	GLMouseButtonInfo updatedMouseButtonInfo = 
 		GlobalResourceManager::use()->getMouseButtonInfo();
@@ -94,45 +93,39 @@ void MakeScene(void)
 
 	bool success;
 
-	// register a system
-	SampleParticle* sphere1 = new SampleParticle( "sphere1" );
+	HumanModel* bob = new HumanModel("bob");
 
-	success = GlobalResourceManager::use()->addSystem( sphere1, true );
+	success = GlobalResourceManager::use()->addSystem(bob, true);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
+
+	// Register the classroom
+	Classroom* room = new Classroom("room");
+
+	success = GlobalResourceManager::use()->addSystem(room, true);
+
+	// make sure it was registered successfully
+	assert(success);
+
+	Hermite* hermite = new Hermite("hermite");
+
+	success = GlobalResourceManager::use()->addSystem(hermite, true);
+
+	// make sure it was registered successfully
+	assert(success);
 
 	// register a simulator
-	SampleGravitySimulator* gravitySimulator = 
-		new SampleGravitySimulator( "gravity", sphere1 );
+	IKSimulator* ikSim = new IKSimulator("iksim", bob);
 
-	success = GlobalResourceManager::use()->addSimulator( gravitySimulator );
+	success = GlobalResourceManager::use()->addSimulator(ikSim);
+
+	ikSim->registerHermite(hermite);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
 
 	/* END SAMPLE SCENE */
-
-	// the following code shows you how to retrieve a system that was registered 
-	// with the resource manager. 
-
-	BaseSystem* sampleSystemRetrieval;
-
-	// retrieve the system
-	sampleSystemRetrieval = 
-		GlobalResourceManager::use()->getSystem( "sphere1" );
-
-	// make sure you got it
-	assert( sampleSystemRetrieval );
-
-	BaseSimulator* sampleSimulatorRetrieval;
-
-	// retrieve the simulator
-	sampleSimulatorRetrieval = 
-		GlobalResourceManager::use()->getSimulator( "gravity" );
-
-	// make sure you got it
-	assert( sampleSimulatorRetrieval );
 
 }	// MakeScene
 

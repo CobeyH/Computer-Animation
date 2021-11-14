@@ -51,7 +51,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>GL;../;../tcl83;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/eigen-3.4.0;GL;../;../tcl83;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -98,11 +98,16 @@
     <ClCompile Include="animTcl.cpp" />
     <ClCompile Include="BaseObject.cpp" />
     <ClCompile Include="BaseSimulator.cpp" />
+    <ClCompile Include="BodyPart.cpp" />
+    <ClCompile Include="Classroom.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
+    <ClCompile Include="Hermite.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="HumanModel.cpp" />
+    <ClCompile Include="IKSimulator.cpp" />
     <ClCompile Include="myScene.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SampleGravitySimulator.cpp" />
-    <ClCompile Include="SampleParticle.cpp" />
     <ClCompile Include="BaseSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -111,11 +116,14 @@
     <ClInclude Include="animTcl.h" />
     <ClInclude Include="BaseObject.h" />
     <ClInclude Include="BaseSimulator.h" />
+    <ClInclude Include="BodyPart.h" />
+    <ClInclude Include="Classroom.h" />
     <ClInclude Include="GlobalResourceManager.h" />
+    <ClInclude Include="Hermite.h" />
+    <ClInclude Include="HumanModel.h" />
+    <ClInclude Include="IKSimulator.h" />
     <ClInclude Include="myScene.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SampleGravitySimulator.h" />
-    <ClInclude Include="SampleParticle.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GLModel\GLModel.vcxproj">
