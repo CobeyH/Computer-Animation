@@ -2,7 +2,7 @@
 #include "BodyPart.h"
 
 HumanModel::HumanModel(const std::string& name) : BaseSystem(name) {
-	root = new BodyPart("root", TORSO_RATIO / 2.5, TORSO_RATIO, 0);
+	root = new BodyPart("root", TORSO_RATIO / 2.5 * 2, TORSO_RATIO * 2, 0);
 	setVector(root->offset, 0, 0, 2);
 	createBody();
 	// Set up angles for shoulder
@@ -18,18 +18,22 @@ HumanModel::HumanModel(const std::string& name) : BaseSystem(name) {
 	BodyPart* rightWrist = rightElbow->getChild(0);
 	angles[5] = rightElbow->linkZRotation();
 	angles[6] = rightElbow->linkYRotation();
+
+	computeJacobian();
 };
 
 void HumanModel::createArm(Orientation side) {
 	int ts = side == Left ? -1 : 1;
-	BodyPart* upperArm = new BodyPart("UpperArm", UPPER_ARM_RATIO / 4, UPPER_ARM_RATIO, 1);
-	BodyPart* lowerArm = new BodyPart("LowerArm", LOWER_ARM_RATIO / 4, LOWER_ARM_RATIO, 2);
-	BodyPart* hand = new BodyPart("Hand", HAND_RATIO / 2, HAND_RATIO, 3);
+	BodyPart* upperArm = new BodyPart("UpperArm", UPPER_ARM_RATIO / 2, UPPER_ARM_RATIO * 2, 1);
+	BodyPart* lowerArm = new BodyPart("LowerArm", LOWER_ARM_RATIO / 2, LOWER_ARM_RATIO * 2, 2);
+	BodyPart* hand = new BodyPart("Hand", HAND_RATIO, HAND_RATIO * 2, 3);
 
 	setVector(upperArm->offset, ts * TORSO_RATIO / 3, UPPER_ARM_RATIO, 0);
-	upperArm->rotZ = -ts * 90;
-	lowerArm->rotZ = 80;
-	hand->rotZ = 80;
+	setVector(lowerArm->offset, 0, UPPER_ARM_RATIO, 0);
+	setVector(hand->offset, 0, LOWER_ARM_RATIO, 0);
+	upperArm->rotZ = -ts * 45.0 * PI / 180.0;
+	//lowerArm->rotY = 90.0 * PI/180.0;
+	hand->rotZ = 45.0 * PI/180.0;
 	
 
 	lowerArm->addChild(hand);
@@ -39,12 +43,12 @@ void HumanModel::createArm(Orientation side) {
 
 void HumanModel::createLeg(Orientation side) {
 	int ts = side == Left ? -1 : 1;
-	BodyPart* upperLeg = new BodyPart("upperLeg", LEG_RATIO / 4, LEG_RATIO, 1);
-	BodyPart* lowerLeg = new BodyPart("lowerLeg", LEG_RATIO / 4, LEG_RATIO, 2);
-	BodyPart* foot = new BodyPart("foot", HAND_RATIO, HAND_RATIO / 2, 3);
+	BodyPart* upperLeg = new BodyPart("upperLeg", LEG_RATIO / 2, LEG_RATIO * 2, 1);
+	BodyPart* lowerLeg = new BodyPart("lowerLeg", LEG_RATIO / 2, LEG_RATIO * 2, 2);
+	BodyPart* foot = new BodyPart("foot", HAND_RATIO * 2, HAND_RATIO, 3);
 
 	setVector(upperLeg->offset, ts * TORSO_RATIO/4, - TORSO_RATIO * 0.9, 0);
-	upperLeg->rotZ = 180;
+	upperLeg->rotZ = 180.0 * PI / 180.0;
 
 	lowerLeg->addChild(foot);
 	upperLeg->addChild(lowerLeg);
@@ -52,7 +56,7 @@ void HumanModel::createLeg(Orientation side) {
 }
 
 void HumanModel::createBody() {
-	BodyPart* head = new BodyPart("head", HEAD_RATIO, HEAD_RATIO, 1);
+	BodyPart* head = new BodyPart("head", HEAD_RATIO * 2, HEAD_RATIO * 2, 1);
 	setVector(head->offset, 0, TORSO_RATIO, 0);
 	root->addChild(head);
 
@@ -86,6 +90,19 @@ void HumanModel::display(GLenum mode) {
 	glPopMatrix();
 };
 
+void HumanModel::computeJacobian() {
+	Jacobian* jacobian = new Jacobian(this);
+	jacobian->computeJacobian();
+
+	Eigen::Vector<double, 3> pCurr = jacobian->computeColumn(0);
+	Eigen::Vector<double, 3> pTarget = { 0, 0, 0 };
+	Eigen::Vector<double, 3> error = pTarget - pCurr;
+	Eigen::Vector<double, 7> angleChange = jacobian->jacobian * error;
+	for (int i = 0; i < 7; i++) {
+		*angles[i] += angleChange(i);
+	}
+}
+
 int HumanModel::command(int argc, myCONST_SPEC char** argv) {
 	if (argc < 1)
 	{
@@ -112,6 +129,10 @@ int HumanModel::command(int argc, myCONST_SPEC char** argv) {
 			return TCL_ERROR;
 		}
 		*angles[index - 1] = atof(argv[2]);
+		glutPostRedisplay();
+	}
+	else if (strcmp(argv[0], "jacob") == 0) {
+		computeJacobian();
 		glutPostRedisplay();
 	}
 	else {

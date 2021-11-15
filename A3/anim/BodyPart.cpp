@@ -73,13 +73,13 @@ void BodyPart::reset(double time) {
 };
 
 void BodyPart::drawRoot() {
-    drawEllipse(width, height);
+    drawEllipse(width/2, height/2);
     for (BodyPart p : children) {
         glPushMatrix();
         glTranslated(p.offset[0], p.offset[1], p.offset[2]);
-        glRotated(p.rotX, 1, 0, 0);
-        glRotated(p.rotY, 0, 1, 0);
-        glRotated(p.rotZ, 0, 0, 1);
+        glRotated(p.rotX * 180.0 / PI, 1, 0, 0);
+        glRotated(p.rotY * 180.0 / PI, 0, 1, 0);
+        glRotated(p.rotZ * 180.0 / PI, 0, 0, 1);
         p.display();
         glPopMatrix();
     }
@@ -147,18 +147,27 @@ Eigen::Matrix<double, 4, 4> BodyPart::getZRotMatrixDer() {
     return rotationMatrix;
 }
 
+Eigen::Matrix<double, 4, 4> BodyPart::getTranslationMatrix() {
+    Eigen::Matrix<double, 4, 4> translationMatrix{
+     {1, 0, 0, offset[0]},
+     {0, 1, 0, offset[1]},
+     {0, 0, 1, offset[2]},
+     {0, 0, 0, 1}
+    };
+    return translationMatrix;
+}
+
 void BodyPart::display(GLenum mode) {
 	glMatrixMode(GL_MODELVIEW);
     glPushMatrix();    
-    glTranslated(0, height, 0);
-    drawEllipse(width, height);
+    glTranslated(0, height/2, 0);
+    drawEllipse(width/2, height/2);
     for (BodyPart p : children) {
         glPushMatrix();
-        // TODO: Fix code duplication
-        glTranslated(0, height, 0);
-        glRotated(p.rotX, 1, 0, 0);
-        glRotated(p.rotY, 0, 1, 0);
-        glRotated(p.rotZ, 0, 0, 1);
+        glTranslated(0, height/2, 0);
+        glRotated(p.rotX * 180.0 / PI, 1, 0, 0);
+        glRotated(p.rotY * 180.0 / PI, 0, 1, 0);
+        glRotated(p.rotZ * 180.0 / PI, 0, 0, 1);
         p.display();
         glPopMatrix();
     }

@@ -18,6 +18,7 @@ public:
 	BodyPart* getChild(int index);
 	void setPosition(Vector pos);
 	void drawRoot();
+	double getHeight() { return height; };
 	Vector offset;
 	// Methods for linking body part to body
 	double* linkXRotation(void);
@@ -31,6 +32,7 @@ public:
 	Eigen::Matrix<double, 4, 4> getXRotMatrixDer();
 	Eigen::Matrix<double, 4, 4> getYRotMatrixDer();
 	Eigen::Matrix<double, 4, 4> getZRotMatrixDer();
+	Eigen::Matrix<double, 4, 4> getTranslationMatrix();
 
 	double rotX, rotY, rotZ;
 private:
