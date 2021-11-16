@@ -28,13 +28,14 @@ private:
 	void createBody();
 	void createArm(Orientation side);
 	void createLeg(Orientation side);
-	void computeJacobian();
+	void computeJacobian(Eigen::Vector<double, 3> pTarget);
 	double* angles[7];
+	Vector effectorPos;
 };
 
 struct Jacobian {
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	Eigen::Matrix<double, 7, 3> jacobian;
+	Eigen::Matrix<double, 3, 7> jacobian;
 	Eigen::Matrix<double, 4, 4> Troot, Tsh, R1, R2, R3, Tel, R4, R5, Twr, R6, R7;
 	HumanModel* body;
 	BodyPart *shoulder, *elbow, *wrist;
@@ -61,9 +62,9 @@ struct Jacobian {
 	void computeJacobian() {
 		for (int i = 1; i < 8; i++) {
 			Eigen::Vector3d nextCol = computeColumn(i);
-			jacobian(i - 1, 0) = nextCol[0];
-			jacobian(i - 1, 1) = nextCol[1];
-			jacobian(i - 1, 2) = nextCol[2];
+			jacobian(0, i - 1) = nextCol[0];
+			jacobian(1, i - 1) = nextCol[1];
+			jacobian(2, i - 1) = nextCol[2];
 		}
 	}
 
@@ -78,8 +79,8 @@ struct Jacobian {
 			(i != 5 ? R4 : elbow->getYRotMatrixDer()) *
 			(i != 4 ? R5 : elbow->getXRotMatrixDer()) *
 			Twr *
-			(i != 6 ? R6 : wrist->getYRotMatrixDer()) *
-			(i != 7 ? R7 : wrist->getZRotMatrixDer()) 
+			(i != 7 ? R6 : wrist->getYRotMatrixDer()) *
+			(i != 6 ? R7 : wrist->getZRotMatrixDer()) 
 		* phand;
 		result[0] = column[0];
 		result[1] = column[1];

@@ -16,10 +16,19 @@ HumanModel::HumanModel(const std::string& name) : BaseSystem(name) {
 	angles[4] = rightElbow->linkYRotation();
 
 	BodyPart* rightWrist = rightElbow->getChild(0);
-	angles[5] = rightElbow->linkZRotation();
-	angles[6] = rightElbow->linkYRotation();
+	angles[5] = rightWrist->linkZRotation();
+	angles[6] = rightWrist->linkYRotation();
 
-	computeJacobian();
+	Jacobian* j = new Jacobian(this);
+	Eigen::Vector<double, 3> pCurr = j->computeColumn(0);
+	effectorPos[0] = pCurr[0]; effectorPos[1] = pCurr[1]; effectorPos[2] = pCurr[2];
+
+	// Set inital angles
+	for (int i = 0; i < 7; i++) {
+		*angles[i] = 15 * PI / 180.0;
+	}
+
+
 };
 
 void HumanModel::createArm(Orientation side) {
@@ -31,9 +40,6 @@ void HumanModel::createArm(Orientation side) {
 	setVector(upperArm->offset, ts * TORSO_RATIO / 3, UPPER_ARM_RATIO, 0);
 	setVector(lowerArm->offset, 0, UPPER_ARM_RATIO, 0);
 	setVector(hand->offset, 0, LOWER_ARM_RATIO, 0);
-	upperArm->rotZ = -ts * 45.0 * PI / 180.0;
-	//lowerArm->rotY = 90.0 * PI/180.0;
-	hand->rotZ = 45.0 * PI/180.0;
 	
 
 	lowerArm->addChild(hand);
@@ -68,11 +74,15 @@ void HumanModel::createBody() {
 }
 
 void HumanModel::getState(double* p) {
-
+	VecCopy(p, effectorPos);
 };
 
 void HumanModel::setState(double* p) {
-	
+	Eigen::Vector<double, 3> pTarget;
+	pTarget[0] = p[0];
+	pTarget[1] = p[1];
+	pTarget[2] = p[2];
+	computeJacobian(pTarget);
 };
 
 void HumanModel::reset(double time) {
@@ -80,6 +90,11 @@ void HumanModel::reset(double time) {
 };
 
 void HumanModel::display(GLenum mode) {
+	glPointSize(5);
+	glBegin(GL_POINTS);
+	glVertex3f(effectorPos[0], effectorPos[1], effectorPos[2]);
+	glEnd();
+
 	glPushMatrix();
 	set_colour(1, 0, 0);
 	glTranslated(root->offset[0], root->offset[1], root->offset[2]);
@@ -90,17 +105,25 @@ void HumanModel::display(GLenum mode) {
 	glPopMatrix();
 };
 
-void HumanModel::computeJacobian() {
+void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 	Jacobian* jacobian = new Jacobian(this);
 	jacobian->computeJacobian();
+	for (int i = 0; i < 7; i++) {
+		animTcl::OutputMessage("Theta %d: %f \n", i + 1, *angles[i] * 180.0 / PI);
+	}
 
-	Eigen::Vector<double, 3> pCurr = jacobian->computeColumn(0);
-	Eigen::Vector<double, 3> pTarget = { 0, 0, 0 };
+	Eigen::Vector<double, 3> pCurr = {effectorPos[0], effectorPos[1], effectorPos[2]};
+
 	Eigen::Vector<double, 3> error = pTarget - pCurr;
-	Eigen::Vector<double, 7> angleChange = jacobian->jacobian * error;
+	Eigen::Matrix<double, 7, 3> Jt = jacobian->jacobian.transpose();
+	Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {
 		*angles[i] += angleChange(i);
 	}
+	// Update the rotation matricies angles
+	Vector errorVec;
+	setVector(errorVec, error(0), error(1), error(2));
+	VecAdd(effectorPos, errorVec, effectorPos);
 }
 
 int HumanModel::command(int argc, myCONST_SPEC char** argv) {
@@ -132,7 +155,8 @@ int HumanModel::command(int argc, myCONST_SPEC char** argv) {
 		glutPostRedisplay();
 	}
 	else if (strcmp(argv[0], "jacob") == 0) {
-		computeJacobian();
+		Eigen::Vector<double, 3> pTarget = { 0,0,0 };
+		computeJacobian(pTarget);
 		glutPostRedisplay();
 	}
 	else {

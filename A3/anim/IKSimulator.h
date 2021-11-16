@@ -15,6 +15,7 @@ public:
 	int command(int argc, myCONST_SPEC char** argv);
 	void registerHermite(Hermite* hermite);
 protected:
+	double prevTime;
 	BaseSystem* m_object;
 	Hermite* tracedPath;
 };
