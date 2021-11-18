@@ -4,6 +4,12 @@
 #include "Hermite.h"
 #include <vector>
 
+enum animationState {
+	WAITING_FOR_SPLINE,
+	GOING_TO_SPLINE_START,
+	GOING_ALONG_SPLINE
+};
+
 class IKSimulator : public BaseSimulator {
 public:
 	IKSimulator(const std::string& name, BaseSystem* target);
@@ -16,6 +22,9 @@ public:
 	void registerHermite(Hermite* hermite);
 protected:
 	double prevTime;
+	double prevTargetT;
 	BaseSystem* m_object;
 	Hermite* tracedPath;
+	// Flags for tracking the current state of simulation
+	animationState state;
 };

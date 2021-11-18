@@ -69,18 +69,18 @@ struct Jacobian {
 	}
 
 	Eigen::Vector3d computeColumn(int i) {
-		Eigen::Vector4d phand = {0, wrist->getHeight() / 2, 0, 1};
+		Eigen::Vector4d phand = {0, wrist->getHeight(), 0, 1};
 		Eigen::Vector3d result;
 		Eigen::Vector<double, 4> column = Troot * Tsh *
-			(i != 3 ? R1 : shoulder->getZRotMatrixDer()) *
+			(i != 3 ? R3 : shoulder->getZRotMatrixDer()) *
 			(i != 2 ? R2 : shoulder->getYRotMatrixDer()) *
-			(i != 1 ? R3 : shoulder->getXRotMatrixDer()) *
+			(i != 1 ? R1 : shoulder->getXRotMatrixDer()) *
 			Tel *
-			(i != 5 ? R4 : elbow->getYRotMatrixDer()) *
-			(i != 4 ? R5 : elbow->getXRotMatrixDer()) *
+			(i != 5 ? R5 : elbow->getYRotMatrixDer()) *
+			(i != 4 ? R4 : elbow->getXRotMatrixDer()) *
 			Twr *
-			(i != 7 ? R6 : wrist->getYRotMatrixDer()) *
-			(i != 6 ? R7 : wrist->getZRotMatrixDer()) 
+			(i != 7 ? R7 : wrist->getYRotMatrixDer()) *
+			(i != 6 ? R6 : wrist->getZRotMatrixDer()) 
 		* phand;
 		result[0] = column[0];
 		result[1] = column[1];
