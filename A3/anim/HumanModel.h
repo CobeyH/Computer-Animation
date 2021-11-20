@@ -3,12 +3,12 @@
 #include "BodyPart.h"
 #include <vector>
 
-#define UPPER_ARM_RATIO 1.75
-#define LOWER_ARM_RATIO 1.75
-#define TORSO_RATIO 2.5
-#define LEG_RATIO 1.5
-#define HAND_RATIO 0.5
-#define HEAD_RATIO 0.75
+#define UPPER_ARM_RATIO 2
+#define LOWER_ARM_RATIO 2
+#define TORSO_RATIO 4.5
+#define LEG_RATIO 2.5
+#define HAND_RATIO 1
+#define HEAD_RATIO 1.5
 
 #define DEG_TO_RAD PI / 180;
 
@@ -35,7 +35,7 @@ private:
 	void setStartingAngles(void);
 	void recalculateEffectorPos(void);
 	double* angles[7];
-	Vector effectorPos;
+	Vector effectorPos, targetPoint;
 };
 
 struct Jacobian {

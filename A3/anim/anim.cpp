@@ -31,7 +31,7 @@ BallData *g_arcball = NULL ;
 
 int g_width = 500 ;
 int g_height = 500 ;
-float g_zoom = 0.5 ;
+float g_zoom = 0.3 ;
 int g_prevY = 0 ;
 
 int g_state = STATE_IDLE ;

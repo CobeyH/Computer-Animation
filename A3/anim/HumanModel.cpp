@@ -4,7 +4,7 @@
 
 HumanModel::HumanModel(const std::string& name) : BaseSystem(name) {
 	root = new BodyPart("root", TORSO_RATIO / 2.5 * 2, TORSO_RATIO * 2, 0);
-	setVector(root->offset, 0, 0, 4);
+	setVector(root->offset, 0, 0, 7);
 	createBody();
 	// Set up angles for shoulder
 	BodyPart* rightShoulder = root->getChild(1);
@@ -36,6 +36,9 @@ void HumanModel::setRestingAngles() {
 	*angles[1] = 35 * DEG_TO_RAD;
 	*angles[2] = -160 * DEG_TO_RAD;
 	*angles[3] = -80 * DEG_TO_RAD;
+	for (int i = 4; i < 7; i++) {
+		*angles[i] = 5 * DEG_TO_RAD;
+	}
 	recalculateEffectorPos();
 
 	BodyPart* leftShoulder = root->getChild(2);
@@ -52,7 +55,7 @@ void HumanModel::createArm(Orientation side) {
 	int ts = side == Left ? -1 : 1;
 	BodyPart* upperArm = new BodyPart("UpperArm", UPPER_ARM_RATIO / 2, UPPER_ARM_RATIO * 2, 1);
 	BodyPart* lowerArm = new BodyPart("LowerArm", LOWER_ARM_RATIO / 2, LOWER_ARM_RATIO * 2, 2);
-	BodyPart* hand = new BodyPart("Hand", HAND_RATIO, HAND_RATIO * 2, 3);
+	BodyPart* hand = new BodyPart("Hand", HAND_RATIO / 2, HAND_RATIO * 2, 3);
 
 	setVector(upperArm->offset, ts * TORSO_RATIO / 3, UPPER_ARM_RATIO, 0);
 	setVector(lowerArm->offset, 0, UPPER_ARM_RATIO * 2, 0);
@@ -103,11 +106,13 @@ void HumanModel::setState(double* p) {
 		pTarget[0] = update->target[0];
 		pTarget[1] = update->target[1];
 		pTarget[2] = update->target[2];
+		VecCopy(targetPoint, update->target);
 		computeJacobian(pTarget);
 	}
 		break;
 	case startup:
 		setRestingAngles();
+		recalculateEffectorPos();
 		break;
 	}
 	
@@ -119,16 +124,19 @@ void HumanModel::reset(double time) {
 };
 
 void HumanModel::display(GLenum mode) {
-	glPointSize(5);
+	glPointSize(10);
 	glBegin(GL_POINTS);
+	set_colour(1, 0, 0);
 	glVertex3f(effectorPos[0], effectorPos[1], effectorPos[2]);
+	set_colour(0, 1, 0);
+	glVertex3f(targetPoint[0], targetPoint[1], targetPoint[2]);
 	glEnd();
 
 	glPushMatrix();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	GLfloat params[] = { 3.0, 3.0, 3.0, 1.0 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, params);
-	set_colour(1, 0, 1);
+	set_colour(1, 1, 0.1);
 	glTranslated(root->offset[0], root->offset[1], root->offset[2]);
 
 	root->drawRoot();
@@ -153,18 +161,20 @@ void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 
 	Eigen::Vector<double, 3> error = pTarget - pCurr;
 	Eigen::Matrix<double, 7, 3> Jt = jacobian->jacobian.transpose();
-	Eigen::Matrix<double, 3, 3> JJt = jacobian->jacobian * Jt;
+	Eigen::Matrix<double, 3, 3> JJt = jacobian->jacobian * Jt;	
 	Eigen::JacobiSVD<Eigen::MatrixXd> svd(JJt, Eigen::ComputeThinU | Eigen::ComputeThinV);
 	Eigen::Vector<double, 3> beta = svd.solve(error);
 	Eigen::Vector<double, 7> angleChange = Jt * beta;
 	//Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {
+
 		*angles[i] += angleChange(i);
+		if (angleChange(i) > 0.05 || angleChange(i) < -0.05) {
+			double errorSize = error.norm();
+			double x = 1;
+		}
 	}
 	// Update the rotation matricies angles
-	Vector errorVec;
-	setVector(errorVec, error(0), error(1), error(2));
-	//VecAdd(effectorPos, errorVec, effectorPos);
 	recalculateEffectorPos();
 	animTcl::OutputMessage("Effector Pos %f %f %f", effectorPos[0], effectorPos[1], effectorPos[2]);
 	glutPostRedisplay();

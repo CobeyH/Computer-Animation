@@ -2,12 +2,12 @@
 #include "BaseSystem.h"
 #include <vector>
 
-#define ROOM_WIDTH 8
-#define ROOM_HEIGHT 8
-#define ROOM_DEPTH 10
+#define ROOM_WIDTH 12
+#define ROOM_HEIGHT 15
+#define ROOM_DEPTH 20
 
-#define BOARD_WIDTH 6
-#define BOARD_HEIGHT  5
+#define BOARD_WIDTH 8
+#define BOARD_HEIGHT 6
 
 class Classroom : public BaseSystem {
 public:
