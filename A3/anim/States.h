@@ -1,11 +1,13 @@
 #pragma once
 #include <util/vector.h>
 
-struct SetBobState {
-	Vector target;
+enum updateType {
+	startup,
+	newTarget
 };
 
-struct GetBobState {
-	Vector effectorPos;
+struct SetBobState {
+	Vector target;
+	updateType mode;
 };
 

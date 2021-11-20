@@ -3,12 +3,14 @@
 #include "BodyPart.h"
 #include <vector>
 
-#define UPPER_ARM_RATIO 1.5
-#define LOWER_ARM_RATIO 1.5
+#define UPPER_ARM_RATIO 1.75
+#define LOWER_ARM_RATIO 1.75
 #define TORSO_RATIO 2.5
-#define LEG_RATIO 1.3
+#define LEG_RATIO 1.5
 #define HAND_RATIO 0.5
 #define HEAD_RATIO 0.75
+
+#define DEG_TO_RAD PI / 180;
 
 enum Orientation {
 	Left,
@@ -29,6 +31,9 @@ private:
 	void createArm(Orientation side);
 	void createLeg(Orientation side);
 	void computeJacobian(Eigen::Vector<double, 3> pTarget);
+	void setRestingAngles(void);
+	void setStartingAngles(void);
+	void recalculateEffectorPos(void);
 	double* angles[7];
 	Vector effectorPos;
 };
@@ -79,8 +84,8 @@ struct Jacobian {
 			(i != 5 ? R5 : elbow->getYRotMatrixDer()) *
 			(i != 4 ? R4 : elbow->getXRotMatrixDer()) *
 			Twr *
-			(i != 7 ? R7 : wrist->getYRotMatrixDer()) *
-			(i != 6 ? R6 : wrist->getZRotMatrixDer()) 
+			(i != 7 ? R6 : wrist->getYRotMatrixDer()) *
+			(i != 6 ? R7 : wrist->getZRotMatrixDer()) 
 		* phand;
 		result[0] = column[0];
 		result[1] = column[1];

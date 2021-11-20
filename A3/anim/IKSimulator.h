@@ -4,6 +4,9 @@
 #include "Hermite.h"
 #include <vector>
 
+#define SPLINE_END 0.9999
+#define ERROR_THRESHOLD 0.5
+
 enum animationState {
 	WAITING_FOR_SPLINE,
 	GOING_TO_SPLINE_START,
@@ -16,10 +19,12 @@ public:
 	int step(double time);
 	int init(double time)
 	{
+		prevTime = 0;
 		return 0;
 	};
 	int command(int argc, myCONST_SPEC char** argv);
 	void registerHermite(Hermite* hermite);
+	void setupSpline(char* filename);
 protected:
 	double prevTime;
 	double prevTargetT;

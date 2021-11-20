@@ -1,5 +1,6 @@
 #include "IKSimulator.h"
 #include "Hermite.h"
+#include "States.h"
 #include <util/vectorObj.h>
 #include <vector>
 
@@ -20,20 +21,22 @@ int IKSimulator::step(double time) {
 	}
 	double deltaTime = time - prevTime;
 	Vector effectorPos, target, error, pTarget, pError;
-	// need to prevent T from going over 1
-	double nextT = max(prevTargetT + 0.01, 0.9999);
+	
 	switch (state) {
 		case GOING_TO_SPLINE_START:
 		{
-			zeroVector(target); // TODO: Calculate target from spline
+			zeroVector(target);
 			VectorObj targetObj = tracedPath->getIntermediatePoint(0);
 			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
 			break;
 		}
 		case GOING_ALONG_SPLINE:
 		{
+			// need to prevent T from going over 1
+			double nextT = min(prevTargetT + 0.0001, 0.9999);
 			VectorObj targetObj = tracedPath->getIntermediatePoint(nextT);
 			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
+			prevTargetT = nextT;
 			break;
 		}
 		default:
@@ -44,16 +47,24 @@ int IKSimulator::step(double time) {
 	m_object->getState(effectorPos);
 	VecSubtract(error, target, effectorPos);
 	VecCopy(pError, error);
-	VecScale(pError, 0.01);
+	if (state == GOING_TO_SPLINE_START) {
+		VecScale(pError, 0.1);
+	}
+	
+	animTcl::OutputMessage("Error Magnitude %f", VecLength(error));
 	VecAdd(pTarget, pError, effectorPos);
-	m_object->setState(pTarget);
+	SetBobState* update = new SetBobState();
+	update->mode = newTarget;
+	VecCopy(update->target, pTarget);
+	m_object->setState((double*) update);
 
 	prevTime = time;
-	if (VecLength(error) < 0.01) {
-		if (state == GOING_TO_SPLINE_START) {
+	if (state == GOING_TO_SPLINE_START) {
+		if (VecLength(error) < ERROR_THRESHOLD) {
 			state = GOING_ALONG_SPLINE;
 		}
-		else {
+	} else {
+		if (prevTargetT == SPLINE_END) {
 			state = GOING_TO_SPLINE_START;
 			prevTargetT = 0;
 		}
@@ -73,11 +84,19 @@ int IKSimulator::command(int argc, myCONST_SPEC char** argv) {
 			animTcl::OutputMessage("Invalid arguments passed. Expeced 2 arguments but got %d", argc);
 			return TCL_ERROR;
 		}
-		tracedPath->loadFromFile2D(argv[1]);
-		state = GOING_TO_SPLINE_START;
+		setupSpline(argv[1]);
+
 		glutPostRedisplay();
 	}
 	else {
 		animTcl::OutputMessage("The given command %s is not valid", argv[0]);
 	}
 };
+
+void IKSimulator::setupSpline(char* filename) {
+	tracedPath->loadFromFile2D(filename);
+	state = GOING_TO_SPLINE_START;
+	SetBobState* setupState = new SetBobState();
+	setupState->mode = startup;
+	m_object->setState((double*) setupState);
+}
