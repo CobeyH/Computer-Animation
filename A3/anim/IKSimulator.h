@@ -20,6 +20,7 @@ public:
 	int init(double time)
 	{
 		prevTime = 0;
+		speed = 0.2;
 		return 0;
 	};
 	int command(int argc, myCONST_SPEC char** argv);
@@ -28,6 +29,7 @@ public:
 protected:
 	double prevTime;
 	double prevTargetT;
+	double speed;
 	BaseSystem* m_object;
 	Hermite* tracedPath;
 	// Flags for tracking the current state of simulation

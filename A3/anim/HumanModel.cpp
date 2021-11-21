@@ -55,7 +55,7 @@ void HumanModel::createArm(Orientation side) {
 	int ts = side == Left ? -1 : 1;
 	BodyPart* upperArm = new BodyPart("UpperArm", UPPER_ARM_RATIO / 2, UPPER_ARM_RATIO * 2, 1);
 	BodyPart* lowerArm = new BodyPart("LowerArm", LOWER_ARM_RATIO / 2, LOWER_ARM_RATIO * 2, 2);
-	BodyPart* hand = new BodyPart("Hand", HAND_RATIO / 2, HAND_RATIO * 2, 3);
+	BodyPart* hand = new BodyPart("Hand", HAND_RATIO, HAND_RATIO * 2, 3);
 
 	setVector(upperArm->offset, ts * TORSO_RATIO / 3, UPPER_ARM_RATIO, 0);
 	setVector(lowerArm->offset, 0, UPPER_ARM_RATIO * 2, 0);
@@ -162,8 +162,10 @@ void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 	Eigen::Vector<double, 3> error = pTarget - pCurr;
 	Eigen::Matrix<double, 7, 3> Jt = jacobian->jacobian.transpose();
 	Eigen::Matrix<double, 3, 3> JJt = jacobian->jacobian * Jt;	
-	Eigen::JacobiSVD<Eigen::MatrixXd> svd(JJt, Eigen::ComputeThinU | Eigen::ComputeThinV);
-	Eigen::Vector<double, 3> beta = svd.solve(error);
+	//Eigen::JacobiSVD<Eigen::MatrixXd> svd(JJt, Eigen::ComputeThinU | Eigen::ComputeThinV);
+	//Eigen::Vector<double, 3> beta = svd.solve(error);
+	Eigen::PartialPivLU<Eigen::MatrixXd> lu(JJt);
+	Eigen::Vector<double, 3> beta = lu.solve(error);
 	Eigen::Vector<double, 7> angleChange = Jt * beta;
 	//Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {

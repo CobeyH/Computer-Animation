@@ -33,7 +33,7 @@ int IKSimulator::step(double time) {
 		case GOING_ALONG_SPLINE:
 		{
 			// need to prevent T from going over 1
-			double nextT = min(prevTargetT + 0.0001, 0.9999);
+			double nextT = min(prevTargetT + 0.0005, 0.9999);
 			VectorObj targetObj = tracedPath->getIntermediatePoint(nextT);
 			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
 			prevTargetT = nextT;
@@ -48,7 +48,8 @@ int IKSimulator::step(double time) {
 	VecSubtract(error, target, effectorPos);
 	VecCopy(pError, error);
 	if (state == GOING_TO_SPLINE_START) {
-		VecScale(pError, 0.1);
+		VecNormalize(pError);
+		VecScale(pError, speed);
 	}
 	
 	animTcl::OutputMessage("Error Magnitude %f", VecLength(error));
