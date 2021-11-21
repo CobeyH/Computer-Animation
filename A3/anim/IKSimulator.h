@@ -20,15 +20,17 @@ public:
 	int init(double time)
 	{
 		prevTime = 0;
-		speed = 0.1;
+		speed = 0.05;
 		return 0;
 	};
 	int command(int argc, myCONST_SPEC char** argv);
 	void registerHermite(Hermite* hermite);
+	void setTargetToStart();
 	void setupSpline(char* filename);
 protected:
 	double prevTime;
 	double prevTargetT;
+	Vector prevTarget, target;
 	double speed;
 	BaseSystem* m_object;
 	Hermite* tracedPath;

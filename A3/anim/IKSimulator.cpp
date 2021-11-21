@@ -14,20 +14,31 @@ void IKSimulator::registerHermite(Hermite* hermite) {
 	tracedPath = hermite;
 }
 
+void IKSimulator::setTargetToStart() {
+	VectorObj targetObj = tracedPath->getIntermediatePoint(0);
+	setVector(target, targetObj[0], targetObj[1], targetObj[2]);
+	Vector effectorPos;
+	m_object->getState(effectorPos);
+	VecCopy(prevTarget, effectorPos);
+}
+
 int IKSimulator::step(double time) {
 	if (state == WAITING_FOR_SPLINE) {
 		animTcl::OutputMessage("Please load a spline before starting the simulation");
 		return TCL_ERROR;
 	}
 	double deltaTime = time - prevTime;
-	Vector effectorPos, target, error, pTarget, pError;
+	Vector effectorPos, error, pTarget, pError;
 	
 	switch (state) {
 		case GOING_TO_SPLINE_START:
 		{
-			zeroVector(target);
-			VectorObj targetObj = tracedPath->getIntermediatePoint(0);
-			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
+			Vector dir;
+			VecSubtract(dir, target, prevTarget);
+			VecNormalize(dir);
+			VecScale(dir, speed);
+			VecAdd(pTarget, prevTarget, dir);
+			VecCopy(prevTarget, pTarget);
 			break;
 		}
 		case GOING_ALONG_SPLINE:
@@ -36,6 +47,7 @@ int IKSimulator::step(double time) {
 			double nextT = min(prevTargetT + 0.0005, 0.9999);
 			VectorObj targetObj = tracedPath->getIntermediatePoint(nextT);
 			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
+			VecCopy(pTarget, target);
 			prevTargetT = nextT;
 			break;
 		}
@@ -45,29 +57,26 @@ int IKSimulator::step(double time) {
 
 	}
 	do {
-	m_object->getState(effectorPos);
-	VecSubtract(error, target, effectorPos);
-	VecCopy(pError, error);
-	if (state == GOING_TO_SPLINE_START) {
-		VecNormalize(pError);
-		VecScale(pError, speed);
-	}
-		VecAdd(pTarget, pError, effectorPos);
+		m_object->getState(effectorPos);
+		VecSubtract(error, pTarget, effectorPos);
 		SetBobState* update = new SetBobState();
 		update->mode = newTarget;
 		VecCopy(update->target, pTarget);
 		m_object->setState((double*)update);
-	} while (VecLength(pError) > 0.3);
+	} while (VecLength(error) > 0.3);
 
 	prevTime = time;
 	if (state == GOING_TO_SPLINE_START) {
-		if (VecLength(error) < ERROR_THRESHOLD) {
+		Vector distanceToStart;
+		VecSubtract(distanceToStart, target, effectorPos);
+		if (VecLength(distanceToStart) < ERROR_THRESHOLD) {
 			state = GOING_ALONG_SPLINE;
 		}
 	} else {
-		if (prevTargetT == SPLINE_END) {
+		if (prevTargetT >= SPLINE_END) {
 			state = GOING_TO_SPLINE_START;
 			prevTargetT = 0;
+			setTargetToStart();
 		}
 	}
 	return TCL_OK;
@@ -86,7 +95,7 @@ int IKSimulator::command(int argc, myCONST_SPEC char** argv) {
 			return TCL_ERROR;
 		}
 		setupSpline(argv[1]);
-
+		setTargetToStart();
 		glutPostRedisplay();
 	}
 	else {

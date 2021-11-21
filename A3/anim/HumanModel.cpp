@@ -167,7 +167,6 @@ void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu(JJt);
 	Eigen::Vector<double, 3> beta = lu.solve(error);
 	Eigen::Vector<double, 7> angleChange = Jt * beta;
-	animTcl::OutputMessage("Error amount: %f", error.norm());
 	//Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {
 		*angles[i] += angleChange(i);
