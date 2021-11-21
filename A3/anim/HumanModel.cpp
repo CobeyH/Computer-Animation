@@ -136,7 +136,7 @@ void HumanModel::display(GLenum mode) {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	GLfloat params[] = { 3.0, 3.0, 3.0, 1.0 };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, params);
-	set_colour(1, 1, 0.1);
+	set_colour(1, 0, 1);
 	glTranslated(root->offset[0], root->offset[1], root->offset[2]);
 
 	root->drawRoot();
@@ -167,18 +167,13 @@ void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 	Eigen::PartialPivLU<Eigen::MatrixXd> lu(JJt);
 	Eigen::Vector<double, 3> beta = lu.solve(error);
 	Eigen::Vector<double, 7> angleChange = Jt * beta;
+	animTcl::OutputMessage("Error amount: %f", error.norm());
 	//Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {
-
 		*angles[i] += angleChange(i);
-		if (angleChange(i) > 0.05 || angleChange(i) < -0.05) {
-			double errorSize = error.norm();
-			double x = 1;
-		}
 	}
 	// Update the rotation matricies angles
 	recalculateEffectorPos();
-	animTcl::OutputMessage("Effector Pos %f %f %f", effectorPos[0], effectorPos[1], effectorPos[2]);
 	glutPostRedisplay();
 }
 

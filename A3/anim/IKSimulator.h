@@ -20,7 +20,7 @@ public:
 	int init(double time)
 	{
 		prevTime = 0;
-		speed = 0.2;
+		speed = 0.1;
 		return 0;
 	};
 	int command(int argc, myCONST_SPEC char** argv);

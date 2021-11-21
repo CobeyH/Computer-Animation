@@ -44,6 +44,7 @@ int IKSimulator::step(double time) {
 			return TCL_ERROR;
 
 	}
+	do {
 	m_object->getState(effectorPos);
 	VecSubtract(error, target, effectorPos);
 	VecCopy(pError, error);
@@ -51,13 +52,12 @@ int IKSimulator::step(double time) {
 		VecNormalize(pError);
 		VecScale(pError, speed);
 	}
-	
-	animTcl::OutputMessage("Error Magnitude %f", VecLength(error));
-	VecAdd(pTarget, pError, effectorPos);
-	SetBobState* update = new SetBobState();
-	update->mode = newTarget;
-	VecCopy(update->target, pTarget);
-	m_object->setState((double*) update);
+		VecAdd(pTarget, pError, effectorPos);
+		SetBobState* update = new SetBobState();
+		update->mode = newTarget;
+		VecCopy(update->target, pTarget);
+		m_object->setState((double*)update);
+	} while (VecLength(pError) > 0.3);
 
 	prevTime = time;
 	if (state == GOING_TO_SPLINE_START) {
