@@ -31,7 +31,7 @@ protected:
 	double prevTime;
 	double prevTargetT;
 	Vector prevTarget, target;
-	double speed;
+	double speed, speedMultiplier;
 	BaseSystem* m_object;
 	Hermite* tracedPath;
 	// Flags for tracking the current state of simulation

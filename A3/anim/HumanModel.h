@@ -17,6 +17,11 @@ enum Orientation {
 	Right
 };
 
+enum Solver {
+	LU,
+	SVD
+};
+
 class HumanModel : public BaseSystem {
 public:
 	HumanModel(const std::string& name);
@@ -36,6 +41,7 @@ private:
 	void recalculateEffectorPos(void);
 	double* angles[7];
 	Vector effectorPos, targetPoint;
+	Solver solveMethod;
 };
 
 struct Jacobian {

@@ -3,6 +3,7 @@
 #include "States.h"
 
 HumanModel::HumanModel(const std::string& name) : BaseSystem(name) {
+	solveMethod = LU;
 	root = new BodyPart("root", TORSO_RATIO / 2.5 * 2, TORSO_RATIO * 2, 0);
 	setVector(root->offset, 0, 0, 7);
 	createBody();
@@ -124,6 +125,7 @@ void HumanModel::reset(double time) {
 };
 
 void HumanModel::display(GLenum mode) {
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPointSize(10);
 	glBegin(GL_POINTS);
 	set_colour(1, 0, 0);
@@ -131,6 +133,7 @@ void HumanModel::display(GLenum mode) {
 	set_colour(0, 1, 0);
 	glVertex3f(targetPoint[0], targetPoint[1], targetPoint[2]);
 	glEnd();
+	glPopAttrib();
 
 	glPushMatrix();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -160,12 +163,18 @@ void HumanModel::computeJacobian(Eigen::Vector<double, 3> pTarget) {
 	Eigen::Vector<double, 3> pCurr = {effectorPos[0], effectorPos[1], effectorPos[2]};
 
 	Eigen::Vector<double, 3> error = pTarget - pCurr;
+	
 	Eigen::Matrix<double, 7, 3> Jt = jacobian->jacobian.transpose();
 	Eigen::Matrix<double, 3, 3> JJt = jacobian->jacobian * Jt;	
-	//Eigen::JacobiSVD<Eigen::MatrixXd> svd(JJt, Eigen::ComputeThinU | Eigen::ComputeThinV);
-	//Eigen::Vector<double, 3> beta = svd.solve(error);
-	Eigen::PartialPivLU<Eigen::MatrixXd> lu(JJt);
-	Eigen::Vector<double, 3> beta = lu.solve(error);
+	
+	Eigen::Vector<double, 3> beta;
+	if (solveMethod == LU) {
+		Eigen::PartialPivLU<Eigen::MatrixXd> lu(JJt);
+		beta = lu.solve(error);
+	} else{
+		Eigen::JacobiSVD<Eigen::MatrixXd> svd(JJt, Eigen::ComputeThinU | Eigen::ComputeThinV);
+		beta = svd.solve(error);
+	}
 	Eigen::Vector<double, 7> angleChange = Jt * beta;
 	//Eigen::Vector<double, 7> angleChange = Jt * error;
 	for (int i = 0; i < 7; i++) {
@@ -202,8 +211,16 @@ int HumanModel::command(int argc, myCONST_SPEC char** argv) {
 			animTcl::OutputMessage("Invalid theta value. Please specify a value from 1-7");
 			return TCL_ERROR;
 		}
-		*angles[index - 1] = atof(argv[2]);
+		*angles[index - 1] = atof(argv[2]) * PI / 180;
 		glutPostRedisplay();
+	}
+	else if (strcmp(argv[0], "setSolver") == 0) {
+		if (argc != 2) {
+			animTcl::OutputMessage("Invalid arguments passed. Expeced 2 arguments but got %d", argc);
+			return TCL_ERROR;
+		}
+		solveMethod = strcmp(argv[1], "lu") == 0 ? LU : SVD;
+		animTcl::OutputMessage("Solver method set to %s", argv[1]);
 	}
 	else {
 		animTcl::OutputMessage("The given command %s is not valid", argv[0]);

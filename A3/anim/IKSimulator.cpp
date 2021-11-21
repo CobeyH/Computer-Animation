@@ -8,6 +8,7 @@ IKSimulator::IKSimulator(const std::string& name, BaseSystem* target) : BaseSimu
 	prevTime = 0;
 	state = WAITING_FOR_SPLINE;
 	prevTargetT = 0;
+	speedMultiplier = 1;
 };
 
 void IKSimulator::registerHermite(Hermite* hermite) {
@@ -36,7 +37,7 @@ int IKSimulator::step(double time) {
 			Vector dir;
 			VecSubtract(dir, target, prevTarget);
 			VecNormalize(dir);
-			VecScale(dir, speed);
+			VecScale(dir, speed * speedMultiplier);
 			VecAdd(pTarget, prevTarget, dir);
 			VecCopy(prevTarget, pTarget);
 			break;
@@ -44,7 +45,7 @@ int IKSimulator::step(double time) {
 		case GOING_ALONG_SPLINE:
 		{
 			// need to prevent T from going over 1
-			double nextT = min(prevTargetT + 0.0005, 0.9999);
+			double nextT = min(prevTargetT + 0.0002 * speedMultiplier, 0.9999);
 			VectorObj targetObj = tracedPath->getIntermediatePoint(nextT);
 			setVector(target, targetObj[0], targetObj[1], targetObj[2]);
 			VecCopy(pTarget, target);
@@ -56,14 +57,20 @@ int IKSimulator::step(double time) {
 			return TCL_ERROR;
 
 	}
+	int iterations = 0;
 	do {
+		iterations++;
 		m_object->getState(effectorPos);
 		VecSubtract(error, pTarget, effectorPos);
 		SetBobState* update = new SetBobState();
 		update->mode = newTarget;
 		VecCopy(update->target, pTarget);
 		m_object->setState((double*)update);
-	} while (VecLength(error) > 0.3);
+		if (iterations >= 75) {
+			// Prevent getting stuck
+			break;
+		}
+	} while (VecLength(error) > 0.5);
 
 	prevTime = time;
 	if (state == GOING_TO_SPLINE_START) {
@@ -97,6 +104,14 @@ int IKSimulator::command(int argc, myCONST_SPEC char** argv) {
 		setupSpline(argv[1]);
 		setTargetToStart();
 		glutPostRedisplay();
+	}
+	else if (strcmp(argv[0], "setSpeed") == 0) {
+		if (argc != 2) {
+			animTcl::OutputMessage("Invalid arguments passed. Expeced 2 arguments but got %d", argc);
+			return TCL_ERROR;
+		}
+		speedMultiplier = atof(argv[1]);
+		
 	}
 	else {
 		animTcl::OutputMessage("The given command %s is not valid", argv[0]);
