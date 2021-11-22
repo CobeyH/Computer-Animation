@@ -19,8 +19,10 @@ class QuadTree : public BaseSystem {
 		bool insert(Boid boid);
 		bool contains(Boid boid);
 		void subdivide();
-		void query(Circle c, std::vector<Boid> foundBoids);
+		void query(Circle c, std::vector<Boid> &foundBoids);
 		bool intersects(Circle);
+		void display(GLenum mode = GL_RENDER);
+
 	protected:
 		// Children
 		QuadTree* northWest;

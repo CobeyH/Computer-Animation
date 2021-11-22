@@ -98,7 +98,7 @@ void MakeScene(void)
 
 	BoidSimulator* boidSim = new BoidSimulator("boidSim", bSystem);
 
-	success = GlobalResourceManager::use()->addSimulator(boidSim);
+	success = GlobalResourceManager::use()->addSimulator(boidSim, true);
 
 	// make sure it was registered successfully
 	assert(success);

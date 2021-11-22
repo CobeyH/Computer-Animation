@@ -42,23 +42,25 @@ bool QuadTree::insert(Boid boid) {
 		   southWest->insert(boid) || 
 		   southEast->insert(boid);
 }
+
 void QuadTree::subdivide() {
 	double currX = center[0];
 	double currY = center[1];
-	double delta = length / 2;
+	double newLength = length / 2;
+	double newRadius = newLength / 2;
 
 	Vector newCenter;
-	setVector(newCenter, currX + delta, currY + delta, 0);
-	northWest = new QuadTree("northwest", delta, newCenter);
+	setVector(newCenter, currX + newRadius, currY + newRadius, 0);
+	northWest = new QuadTree("northwest", newLength, newCenter);
 
-	setVector(newCenter, currX - delta, currY + delta, 0);
-	northEast = new QuadTree("northEast", delta, newCenter);
+	setVector(newCenter, currX - newRadius, currY + newRadius, 0);
+	northEast = new QuadTree("northEast", newLength, newCenter);
 
-	setVector(newCenter, currX + delta, currY - delta, 0);
-	southWest = new QuadTree("southWest", delta, newCenter);
+	setVector(newCenter, currX + newRadius, currY - newRadius, 0);
+	southWest = new QuadTree("southWest", newLength, newCenter);
 
-	setVector(newCenter, currX - delta, currY - delta, 0);
-	southEast = new QuadTree("southEast", delta, newCenter);
+	setVector(newCenter, currX - newRadius, currY - newRadius, 0);
+	southEast = new QuadTree("southEast", newLength, newCenter);
 
 	divided = true;
 }
@@ -80,12 +82,12 @@ bool QuadTree::intersects(Circle c) {
 	return cornerDist <= pow(c.r, 2);
 }
 
-void QuadTree::query(Circle c, std::vector<Boid> foundBoids) {
+void QuadTree::query(Circle c, std::vector<Boid> &foundBoids) {
 	if (!intersects(c)) {
 		return;
 	}
 	for (Boid b : containedBoids) {
-		if (contains(b)) {
+		if (sqrt(pow(c.x - b.position[0], 2) + pow(c.y - b.position[1], 2)) <= c.r) {
 			foundBoids.push_back(b);
 		}
 	}
@@ -97,4 +99,22 @@ void QuadTree::query(Circle c, std::vector<Boid> foundBoids) {
 	northEast->query(c, foundBoids);
 	southWest->query(c, foundBoids);
 	southEast->query(c, foundBoids);
+}
+
+void QuadTree::display(GLenum mode) {
+
+	if (!divided) {
+		glBegin(GL_LINE_LOOP);
+		glVertex3d(center[0] + length/2, center[1] + length/2, 0);
+		glVertex3d(center[0] + length / 2, center[1] - length / 2, 0);
+		glVertex3d(center[0] - length / 2, center[1] - length / 2, 0);
+		glVertex3d(center[0] - length / 2, center[1] + length / 2, 0);
+		glEnd();
+	}
+	else {
+		northWest->display(mode);
+		northEast->display(mode);
+		southWest->display(mode);
+		southEast->display(mode);
+	}
 }

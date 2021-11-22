@@ -3,6 +3,7 @@
 #include "BaseSystem.h"
 #include "States.h"
 #include <vector>
+#include "QuadTree.h"
 
 class BoidSimulator : public BaseSimulator {
 public:
@@ -12,9 +13,11 @@ public:
 		double prevTime = 0;
 		return 0;
 	};
+	void display(GLenum mode = GL_RENDER);
 protected:
 	double prevTime;
 	BaseSystem* m_object;
+	std::vector<QuadTree> quadTrees;
 	void calculateFlockCenter(Vector center, Flock* flock);
 	void updateDirection(Boid* b, Vector center, Flock* flock);
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
