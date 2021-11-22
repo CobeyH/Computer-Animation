@@ -33,21 +33,32 @@ int BoidSimulator::step(double time) {
 }
 
 void BoidSimulator::updateDirection(Boid* b, Vector center, BoidState* state) {
-	addCohesion(b, center);
-	addAlignment(b, state);
-	addSeparation(b, state);
+	Vector steeringForce, desiredVelocity;
+	VecCopy(desiredVelocity, b->velocity);
+	addCohesion(b, center, desiredVelocity);
+	addAlignment(b, state, desiredVelocity);
+	addSeparation(b, state, desiredVelocity);
+	VecSubtract(steeringForce, desiredVelocity, b->velocity);
+	if (VecLength(steeringForce) > 0.005) {
+		VecNormalize(steeringForce);
+		VecScale(steeringForce, 0.005);
+	}
+	VecAdd(b->velocity, steeringForce, b->velocity);
 	VecNormalize(b->velocity);
+
+	double test = VecLength(steeringForce);
+	
 }
 
-void BoidSimulator::addCohesion(Boid* b, Vector center) {
+void BoidSimulator::addCohesion(Boid* b, Vector center, Vector desiredVelocity) {
 	Vector cohesionFactor;
 	zeroVector(cohesionFactor);
 	VecSubtract(cohesionFactor, center, b->position);
 	VecScale(cohesionFactor, 1.0 / 200);
-	VecAdd(b->velocity, b->velocity, cohesionFactor);
+	VecAdd(desiredVelocity, desiredVelocity, cohesionFactor);
 
 }
-void BoidSimulator::addAlignment(Boid* b, BoidState* state) {
+void BoidSimulator::addAlignment(Boid* b, BoidState* state, Vector desiredVelocity) {
 	Vector alignFactor;
 	zeroVector(alignFactor);
 	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
@@ -58,9 +69,9 @@ void BoidSimulator::addAlignment(Boid* b, BoidState* state) {
 	VecScale(alignFactor, 1.0 / (state->boids->size() - 1));
 	VecSubtract(alignFactor, alignFactor, b->velocity);
 	VecScale(alignFactor, 1.0 / 600.0);
-	VecAdd(b->velocity, b->velocity, alignFactor);
+	VecAdd(desiredVelocity, desiredVelocity, alignFactor);
 }
-void BoidSimulator::addSeparation(Boid* b, BoidState* state) {
+void BoidSimulator::addSeparation(Boid* b, BoidState* state, Vector desiredVelocity) {
 	Vector vecBetween, sepFactor;
 	zeroVector(sepFactor);
 	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
@@ -73,7 +84,7 @@ void BoidSimulator::addSeparation(Boid* b, BoidState* state) {
 		}
 	}
 	VecScale(sepFactor, 0.01);
-	VecAdd(b->velocity, b->velocity, sepFactor);
+	VecAdd(desiredVelocity, desiredVelocity, sepFactor);
 }
 
 void BoidSimulator::calculateFlockCenter(Vector center, BoidState* state) {

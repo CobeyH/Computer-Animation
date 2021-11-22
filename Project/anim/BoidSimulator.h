@@ -17,8 +17,8 @@ protected:
 	BaseSystem* m_object;
 	void calculateFlockCenter(Vector center, BoidState* state);
 	void updateDirection(Boid* b, Vector center, BoidState* state);
-	void addCohesion(Boid* b, Vector center);
-	void addAlignment(Boid* b, BoidState* state);
-	void addSeparation(Boid* b, BoidState* state);
+	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
+	void addAlignment(Boid* b, BoidState* state, Vector desiredVelocity);
+	void addSeparation(Boid* b, BoidState* state, Vector desiredVelocity);
 };
 

@@ -7,17 +7,19 @@ BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 };
 
 void getRandomDirection(Vector dir) {
-	int x = rand() % 100 - 50;
-	int y = rand() % 100 - 50;
-	int z = rand() % 100 - 50;
+	double x = rand() % 100 - 50;
+	double y = rand() % 100 - 50;
+	//int z = rand() % 100 - 50;
+	double z = 0;
 	setVector(dir, x, y, z);
 	VecNormalize(dir);
 }
 void getRandomPosition(Vector pos) {
 	// Generate random numbers from -4 to 5
-	int x = (double)(rand() % 800) / 100 - 4;
-	int y = (double)(rand() % 800) / 100 - 4;
-	int z = (double)(rand() % 800) / 100 - 4;
+	double x = (double)(rand() % 800) / 100 - 4;
+	double y = (double)(rand() % 800) / 100 - 4;
+	//int z = (double)(rand() % 800) / 100 - 4;
+	int z = 0;
 	setVector(pos, x, y, z);
 }
 
@@ -27,7 +29,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
-		Boid* newBoid = new Boid(initalPosition, initalDirection, i);
+		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % 5);
 		boids.push_back(*newBoid);
 	}
 	glutPostRedisplay();
@@ -59,7 +61,7 @@ void BoidSystem::display(GLenum mode) {
 		glBegin(GL_TRIANGLE_FAN);
 		// Calculate vector from head to tail
 		VecCopy(tailOffset, b.velocity);
-		VecScale(tailOffset, -0.5);
+		VecScale(tailOffset, -0.3);
 		// Calculate vector orthoginal to that vector
 		VecCrossProd(wingOffset, zAxis, tailOffset);
 		VecNormalize(wingOffset);
