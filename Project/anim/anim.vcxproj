@@ -102,6 +102,7 @@
     <ClCompile Include="BoidSystem.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
     <ClCompile Include="myScene.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SampleGravitySimulator.cpp" />
     <ClCompile Include="SampleParticle.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="BoidSystem.h" />
     <ClInclude Include="GlobalResourceManager.h" />
     <ClInclude Include="myScene.h" />
+    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SampleGravitySimulator.h" />
     <ClInclude Include="SampleParticle.h" />

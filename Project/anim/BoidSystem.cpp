@@ -17,6 +17,7 @@ void getRandomDirection(Vector dir) {
 	setVector(dir, x, y, z);
 	VecNormalize(dir);
 }
+
 void getRandomPosition(Vector pos) {
 	// Generate random numbers from -4 to 5
 	double x = (double)(rand() % 800) / 100 - 4;
@@ -35,7 +36,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
-		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % 5);
+		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT);
 		flocks[newBoid->flockId].members.push_back(*newBoid);
 	}
 	glutPostRedisplay();
