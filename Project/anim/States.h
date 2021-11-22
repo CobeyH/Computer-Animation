@@ -17,7 +17,11 @@ struct Boid {
 	int id, flockId;
 };
 
+struct Flock {
+	std::vector<Boid> members;
+};
+
 struct BoidState {
-	std::vector<Boid>* boids;
+	std::vector<Flock>* flocks;
 };
 

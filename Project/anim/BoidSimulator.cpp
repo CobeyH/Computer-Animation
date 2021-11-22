@@ -12,17 +12,23 @@ int BoidSimulator::step(double time) {
 		deltaTime = time;
 	}
 	m_object->getState((double*)state);
-	Vector posOffset, center;
-	calculateFlockCenter(center, state);
-	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
-		VecCopy(posOffset, it->velocity);
-		VecScale(posOffset, it->speed);
-		VecAdd(it->position, it->position, posOffset);
-		updateDirection(&(*it), center, state);
-		// Check if the boid has gone out of bounds
-		for (int i = 0; i < 3; i++) {
-			if (it->position[i] < -6 || it->position[i] > 6) {
-				it->velocity[i] = -it->velocity[i];
+	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
+		Vector posOffset, center;
+		calculateFlockCenter(center, &(*itFlock));
+		for (std::vector<Boid>::iterator it = itFlock->members.begin(); it != itFlock->members.end(); ++it) {
+			VecCopy(posOffset, it->velocity);
+			VecScale(posOffset, it->speed);
+			VecAdd(it->position, it->position, posOffset);
+			updateDirection(&(*it), center, (&(*itFlock)));
+			// Check if the boid has gone out of bounds
+			for (int i = 0; i < 3; i++) {
+
+				if (it->position[i] < -6 ) {
+					it->velocity[i] = abs(it->velocity[i]);
+				}
+				else if (it->position[i] > 6) {
+					it->velocity[i] = -abs(it->velocity[i]);
+				}
 			}
 		}
 	}
@@ -32,12 +38,12 @@ int BoidSimulator::step(double time) {
 	return TCL_OK;
 }
 
-void BoidSimulator::updateDirection(Boid* b, Vector center, BoidState* state) {
+void BoidSimulator::updateDirection(Boid* b, Vector center, Flock* flock) {
 	Vector steeringForce, desiredVelocity;
 	VecCopy(desiredVelocity, b->velocity);
 	addCohesion(b, center, desiredVelocity);
-	addAlignment(b, state, desiredVelocity);
-	addSeparation(b, state, desiredVelocity);
+	addAlignment(b, flock, desiredVelocity);
+	addSeparation(b, flock, desiredVelocity);
 	VecSubtract(steeringForce, desiredVelocity, b->velocity);
 	if (VecLength(steeringForce) > 0.005) {
 		VecNormalize(steeringForce);
@@ -58,23 +64,23 @@ void BoidSimulator::addCohesion(Boid* b, Vector center, Vector desiredVelocity) 
 	VecAdd(desiredVelocity, desiredVelocity, cohesionFactor);
 
 }
-void BoidSimulator::addAlignment(Boid* b, BoidState* state, Vector desiredVelocity) {
+void BoidSimulator::addAlignment(Boid* b, Flock* flock, Vector desiredVelocity) {
 	Vector alignFactor;
 	zeroVector(alignFactor);
-	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
+	for (auto it = flock->members.begin(); it != flock->members.end(); ++it) {
 		if (it->id != b->id) {
 			VecAdd(alignFactor, alignFactor, it->velocity);
 		}
 	}
-	VecScale(alignFactor, 1.0 / (state->boids->size() - 1));
+	VecScale(alignFactor, 1.0 / (flock->members.size() - 1));
 	VecSubtract(alignFactor, alignFactor, b->velocity);
 	VecScale(alignFactor, 1.0 / 600.0);
 	VecAdd(desiredVelocity, desiredVelocity, alignFactor);
 }
-void BoidSimulator::addSeparation(Boid* b, BoidState* state, Vector desiredVelocity) {
+void BoidSimulator::addSeparation(Boid* b, Flock* flock, Vector desiredVelocity) {
 	Vector vecBetween, sepFactor;
 	zeroVector(sepFactor);
-	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
+	for (auto it = flock->members.begin(); it != flock->members.end(); ++it) {
 		if (it->id != b->id) {
 			VecSubtract(vecBetween, it->position, b->position);
 			double distBetween = VecLength(vecBetween);
@@ -87,10 +93,10 @@ void BoidSimulator::addSeparation(Boid* b, BoidState* state, Vector desiredVeloc
 	VecAdd(desiredVelocity, desiredVelocity, sepFactor);
 }
 
-void BoidSimulator::calculateFlockCenter(Vector center, BoidState* state) {
+void BoidSimulator::calculateFlockCenter(Vector center, Flock* flock) {
 	zeroVector(center);
-	for (auto it = state->boids->begin(); it != state->boids->end(); ++it) {
+	for (std::vector<Boid>::iterator it = flock->members.begin(); it != flock->members.end(); ++it) {
 		VecAdd(center, it->position, center);
 	}
-	VecScale(center, 1.0 / state->boids->size());
+	VecScale(center, 1.0 / flock->members.size());
 }

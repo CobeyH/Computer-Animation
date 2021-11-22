@@ -3,6 +3,8 @@
 #include "States.h"
 #include <vector>
 
+#define FLOCK_COUNT 5
+
 class BoidSystem : public BaseSystem {
 public:
 	// Inherited and required functions
@@ -15,6 +17,6 @@ public:
 	// Extra methods
 	void generateInitalBoids(double numBoids);
 private:
-	std::vector<Boid> boids;
+	std::vector<Flock> flocks;
 };
 

@@ -15,10 +15,10 @@ public:
 protected:
 	double prevTime;
 	BaseSystem* m_object;
-	void calculateFlockCenter(Vector center, BoidState* state);
-	void updateDirection(Boid* b, Vector center, BoidState* state);
+	void calculateFlockCenter(Vector center, Flock* flock);
+	void updateDirection(Boid* b, Vector center, Flock* flock);
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
-	void addAlignment(Boid* b, BoidState* state, Vector desiredVelocity);
-	void addSeparation(Boid* b, BoidState* state, Vector desiredVelocity);
+	void addAlignment(Boid* b, Flock* flock, Vector desiredVelocity);
+	void addSeparation(Boid* b, Flock* flock, Vector desiredVelocity);
 };
 
