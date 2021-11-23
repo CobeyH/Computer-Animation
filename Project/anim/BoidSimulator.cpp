@@ -33,6 +33,21 @@ void checkBoundries(Boid* b) {
 	}
 }
 
+void BoidSimulator::checkPredatorFood(Boid* p, Flock* flock) {
+	for (std::list<Boid*>::iterator it = flock->members.begin(); it != flock->members.end(); ++it) {
+		Boid* nextBoid = *it;
+		double x = nextBoid->position[0] - p->position[0];
+		double y = nextBoid->position[1] - p->position[1];
+		if (x*x + y*y < 0.5) {
+			p->hasEaten = true;
+			BoidSetState state;
+			state.toDelete = nextBoid;
+			m_object->setState((double*) &state);
+			return;
+		}
+	}
+}
+
 int BoidSimulator::step(double time) {
 	BoidState* state = new BoidState();
 	double deltaTime = time - prevTime;
@@ -136,8 +151,10 @@ void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTre
 	for (std::list<Boid*>::iterator predatorIt = predators->members.begin(); predatorIt != predators->members.end(); ++predatorIt) {
 		Flock closeBoids;
 		Circle c = Circle((*predatorIt)->position[0], (*predatorIt)->position[1], 2);
+		// Close boids is a subset of boids that is close to the predator
 		qTree->query(&c, closeBoids.members);
 		Boid* p = *predatorIt;
+		checkPredatorFood(p, &closeBoids);
 		for (std::list<Boid*>::iterator bIter = closeBoids.members.begin(); bIter != closeBoids.members.end(); ++bIter) {
 			Boid* b = *bIter;
 			Vector displacement;

@@ -27,5 +27,6 @@ protected:
 	void addAlignment(Boid* b, Flock* flock, Vector desiredVelocity);
 	void addSeparation(Boid* b, Flock* flock, Vector desiredVelocity);
 	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree* qTree);
+	void checkPredatorFood(Boid* p, Flock* flock);
 };
 

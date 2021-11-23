@@ -59,6 +59,8 @@ void BoidSystem::getState(double* p) {
 };
 
 void BoidSystem::setState(double* p) {
+	BoidSetState* state = (BoidSetState*) p;
+	flocks[state->toDelete->flockId].members.remove(state->toDelete);
 	
 }
 

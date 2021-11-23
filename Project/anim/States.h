@@ -11,13 +11,14 @@ struct Boid {
 		id = index;
 		flockId = flock;
 		isPredator = predator;
+		hasEaten = false;
 	}
 	double maxSpeed, mass;
 	Vector initalPosition;
 	Vector position;
 	Vector velocity;
 	int id, flockId;
-	bool isPredator;
+	bool isPredator, hasEaten;
 };
 
 struct Flock {
@@ -29,3 +30,6 @@ struct BoidState {
 	Flock* predators;
 };
 
+struct BoidSetState {
+	Boid* toDelete;
+};
