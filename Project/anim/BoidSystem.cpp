@@ -7,6 +7,7 @@ BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 		Flock* newFlock = new Flock();
 		flocks.push_back(*newFlock);
 	}
+	predators = new Flock();
 };
 
 void getRandomDirection(Vector dir) {
@@ -31,7 +32,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 	for (int i = 0; i < flocks.size(); i++) {
 		flocks[i].members.clear();
 	}
-	
+	// Create Normal Boids
 	for (int i = 0; i < numBoids; i++) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
@@ -39,12 +40,22 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT);
 		flocks[newBoid->flockId].members.push_back(newBoid);
 	}
+	// Create Predators
+	int numPredators = numBoids / 100 + 1;
+	for (int i = 0; i < numPredators; i++) {
+		Vector initalPosition, initalDirection;
+		getRandomPosition(initalPosition);
+		getRandomDirection(initalDirection);
+		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, true);
+		predators->members.push_back(newBoid);
+	}
 	glutPostRedisplay();
 };
 
 void BoidSystem::getState(double* p) {
 	BoidState* state = (BoidState*) p;
 	state->flocks = &flocks;
+	state->predators = predators;
 };
 
 void BoidSystem::setState(double* p) {
@@ -60,11 +71,40 @@ void BoidSystem::reset(double time) {
 	}
 }
 
+void drawBoid(Boid* b) {
+	Vector tail, tailOffset, leftWing, rightWing, wingOffset, zAxis;
+	setVector(zAxis, 0, 0, 1);
+	glBegin(GL_TRIANGLE_FAN);
+	// Calculate vector from head to tail
+	VecCopy(tailOffset, b->velocity);
+	VecScale(tailOffset, -0.3);
+	// Calculate vector orthoginal to that vector
+	VecCrossProd(wingOffset, zAxis, tailOffset);
+	VecNormalize(wingOffset);
+	VecScale(wingOffset, 0.15);
+
+
+	// Calculate tail position
+	VecAdd(tail, b->position, tailOffset);
+	// Calculate right wing position
+	VecAdd(rightWing, tail, wingOffset);
+	VecScale(tailOffset, 0.4);
+	VecAdd(rightWing, tailOffset, rightWing);
+
+	// Calculate left wing position
+	VecSubtract(leftWing, tail, wingOffset);
+	VecAdd(leftWing, tailOffset, leftWing);
+	// Draw the boids
+	glVertex3dv(b->position);
+	glVertex3dv(leftWing);
+	glVertex3dv(tail);
+	glVertex3dv(rightWing);
+	glEnd();
+}
+
 void BoidSystem::display(GLenum mode) {
 	glPointSize(3);
 	set_colour(0.0, 1.0, 0.0);
-	Vector tail, tailOffset, leftWing, rightWing, wingOffset, zAxis;
-	setVector(zAxis, 0, 0, 1);
 	
 	
 	for (int i = 0; i < flocks.size(); i++) {
@@ -88,33 +128,12 @@ void BoidSystem::display(GLenum mode) {
 			set_colour(1, 1, 1);
 		}
 		for (Boid* b : flocks[i].members) {
-			glBegin(GL_TRIANGLE_FAN);
-			// Calculate vector from head to tail
-			VecCopy(tailOffset, b->velocity);
-			VecScale(tailOffset, -0.3);
-			// Calculate vector orthoginal to that vector
-			VecCrossProd(wingOffset, zAxis, tailOffset);
-			VecNormalize(wingOffset);
-			VecScale(wingOffset, 0.15);
-
-
-			// Calculate tail position
-			VecAdd(tail, b->position, tailOffset);
-			// Calculate right wing position
-			VecAdd(rightWing, tail, wingOffset);
-			VecScale(tailOffset, 0.4);
-			VecAdd(rightWing, tailOffset, rightWing);
-
-			// Calculate left wing position
-			VecSubtract(leftWing, tail, wingOffset);
-			VecAdd(leftWing, tailOffset, leftWing);
-			// Draw the boids
-			glVertex3dv(b->position);
-			glVertex3dv(leftWing);
-			glVertex3dv(tail);
-			glVertex3dv(rightWing);
-			glEnd();
+			drawBoid(b);
 		}
+	}
+	set_colour(0, 0, 0);
+	for (std::list<Boid*>::iterator it = predators->members.begin(); it != predators->members.end(); ++it) {
+		drawBoid((*it));
 	}
 }
 

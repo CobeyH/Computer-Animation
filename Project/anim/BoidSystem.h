@@ -3,7 +3,7 @@
 #include "States.h"
 #include <vector>
 
-#define FLOCK_COUNT 5
+#define FLOCK_COUNT 1
 
 class BoidSystem : public BaseSystem {
 public:
@@ -18,5 +18,6 @@ public:
 	void generateInitalBoids(double numBoids);
 private:
 	std::vector<Flock> flocks;
+	Flock* predators;
 };
 

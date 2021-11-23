@@ -23,5 +23,6 @@ protected:
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
 	void addAlignment(Boid* b, Flock* flock, Vector desiredVelocity);
 	void addSeparation(Boid* b, Flock* flock, Vector desiredVelocity);
+	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree* qTree);
 };
 
