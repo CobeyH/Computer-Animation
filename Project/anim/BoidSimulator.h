@@ -6,7 +6,7 @@
 #include "QuadTree.h"
 
 #define SCREEN_EDGE 6
-#define EDGE_MARGIN 1
+#define EDGE_MARGIN 0.2
 
 class BoidSimulator : public BaseSimulator {
 public:
@@ -20,7 +20,7 @@ public:
 protected:
 	double prevTime;
 	BaseSystem* m_object;
-	std::vector<QuadTree> quadTrees;
+	std::vector<QuadTree*> quadTrees;
 	void calculateFlockCenter(Vector center, Flock* flock);
 	void updateDirection(Boid* b, Vector center, Flock* flock);
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);

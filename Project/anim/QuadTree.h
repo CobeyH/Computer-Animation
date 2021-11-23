@@ -20,8 +20,8 @@ class QuadTree : public BaseSystem {
 		bool insert(Boid* boid);
 		bool contains(Boid* boid);
 		void subdivide();
-		void query(Circle c, std::list<Boid*> &foundBoids);
-		bool intersects(Circle);
+		void query(Circle* c, std::list<Boid*> &foundBoids);
+		bool intersects(Circle* c);
 		void display(GLenum mode = GL_RENDER);
 		void freeChildren();
 

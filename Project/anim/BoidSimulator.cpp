@@ -16,10 +16,10 @@ void updatePosition(Boid* b) {
 void checkBoundries(Boid* b) {
 	for (int i = 0; i < 2; i++) {
 		if (b->position[i] < -SCREEN_EDGE + EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] + 0.1;
+			b->velocity[i] = b->velocity[i] + 0.05;
 		}
 		else if (b->position[i] > SCREEN_EDGE - EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] - 0.1;
+			b->velocity[i] = b->velocity[i] - 0.05;
 		}
 	}
 }
@@ -31,31 +31,37 @@ int BoidSimulator::step(double time) {
 		deltaTime = time;
 	}
 	m_object->getState((double*)state);
+
+	for (std::list<Boid*>::iterator it = state->predators->members.begin(); it != state->predators->members.end(); ++it) {
+		updatePosition(*it);
+		checkBoundries(*it);
+	}
+
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
 		Vector center, origin;
 		zeroVector(origin);
-		QuadTree* qTree = new QuadTree("qTree", 12, origin); // MEMORY LEAK
+		
+		QuadTree* qTree = new QuadTree("qTree", 12, origin);
 		for (Boid* b : itFlock->members) {
-			qTree->insert(b); // MEMORY LEAK: Spawns new quadTrees
+			qTree->insert(b);
 		}
-		quadTrees.push_back(*qTree);
+		quadTrees.push_back(qTree);
 		calculateFlockCenter(center, &(*itFlock));
 		avoidPredators(&(*itFlock), state->predators, qTree);
 		for (std::list<Boid*>::iterator it = itFlock->members.begin(); it != itFlock->members.end(); ++it) {
 			Boid* nextBoid = (*it);
 			updatePosition(nextBoid);
-			Flock* closeBoids = new Flock();
-			Circle* c = new Circle(nextBoid->position[0], nextBoid->position[1], 2);
-			qTree->query(*c, closeBoids->members);
+			Flock closeBoids;
+			Circle c = Circle(nextBoid->position[0], nextBoid->position[1], 2);
+			qTree->query(&c, closeBoids.members);
 			checkBoundries(nextBoid);
-			updateDirection(&(*nextBoid), center, closeBoids);
+			updateDirection(&(*nextBoid), center, &closeBoids);
 		}
 		qTree->freeChildren();
-		free(qTree);
 	}
 	m_object->display();
 	time = prevTime;
-	quadTrees.clear(); // MEMORY LEAK FIX ATTEMPT
+	quadTrees.clear();
 	quadTrees.shrink_to_fit();
 	return TCL_OK;
 }
@@ -119,17 +125,18 @@ void BoidSimulator::addSeparation(Boid* b, Flock* flock, Vector desiredVelocity)
 
 void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTree* qTree) {
 	for (std::list<Boid*>::iterator predatorIt = predators->members.begin(); predatorIt != predators->members.end(); ++predatorIt) {
-		Flock* closeBoids = new Flock();
-		Circle* c = new Circle((*predatorIt)->position[0], (*predatorIt)->position[1], 2);
-		qTree->query(*c, closeBoids->members);
+		Flock closeBoids;
+		Circle c = Circle((*predatorIt)->position[0], (*predatorIt)->position[1], 2);
+		qTree->query(&c, closeBoids.members);
 		Boid* p = *predatorIt;
-		for (std::list<Boid*>::iterator bIter = closeBoids->members.begin(); bIter != closeBoids->members.end(); ++bIter) {
+		for (std::list<Boid*>::iterator bIter = closeBoids.members.begin(); bIter != closeBoids.members.end(); ++bIter) {
 			Boid* b = *bIter;
 			Vector displacement;
 			VecSubtract(displacement, b->position, p->position);
-			VecNormalize(displacement);
+			VecLength(displacement);
 			VecScale(displacement, 0.5);
 			VecAdd(b->velocity, b->velocity, displacement);
+			VecNormalize(b->velocity);
 		}
 	}
 }
@@ -143,7 +150,7 @@ void BoidSimulator::calculateFlockCenter(Vector center, Flock* flock) {
 }
 
 void BoidSimulator::display(GLenum mode) {
-	for (QuadTree qTree : quadTrees) {
-		qTree.display();
+	for (QuadTree* qTree : quadTrees) {
+		qTree->display();
 	}
 }

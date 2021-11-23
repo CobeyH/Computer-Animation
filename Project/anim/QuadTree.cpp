@@ -65,13 +65,13 @@ void QuadTree::subdivide() {
 	divided = true;
 }
 
-bool QuadTree::intersects(Circle c) {
-	double differenceX = abs(c.x - center[0]);
-	double differenceY = abs(c.y - center[1]);
+bool QuadTree::intersects(Circle* c) {
+	double differenceX = abs(c->x - center[0]);
+	double differenceY = abs(c->y - center[1]);
 
 	// There is no way they can overlap if the distance is greater than half 
 	// the square length + radius of circle
-	if (differenceX > length / 2 + c.r || differenceY > length / 2 + c.r) {
+	if (differenceX > length / 2 + c->r || differenceY > length / 2 + c->r) {
 		return false;
 	}
 	if (differenceX <= length / 2 || differenceY <= length / 2) {
@@ -80,12 +80,12 @@ bool QuadTree::intersects(Circle c) {
 	return false;
 }
 
-void QuadTree::query(Circle c, std::list<Boid*> &foundBoids) {
+void QuadTree::query(Circle* c, std::list<Boid*> &foundBoids) {
 	if (!intersects(c)) {
 		return;
 	}
 	for (int i = 0; i < containedBoids.size(); i++) {
-		if (sqrt(pow(c.x - containedBoids[i]->position[0], 2) + pow(c.y - containedBoids[i]->position[1], 2)) <= c.r) {
+		if (sqrt(pow(c->x - containedBoids[i]->position[0], 2) + pow(c->y - containedBoids[i]->position[1], 2)) <= c->r) {
 			foundBoids.push_back(containedBoids[i]);
 		}
 	}
@@ -118,15 +118,12 @@ void QuadTree::display(GLenum mode) {
 }
 
 void QuadTree::freeChildren() {
-	if (!divided) {
-		return;
+	if (divided) {
+		northWest->freeChildren();
+		northEast->freeChildren();
+		southWest->freeChildren();
+		southEast->freeChildren();
+		
 	}
-	northWest->freeChildren();
-	northEast->freeChildren();
-	southWest->freeChildren();
-	southEast->freeChildren();
-	free(northWest);
-	free(northEast);
-	free(southWest);
-	free(southEast);
+	delete(this);
 }
