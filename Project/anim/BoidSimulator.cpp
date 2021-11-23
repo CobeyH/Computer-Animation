@@ -3,13 +3,22 @@
 #include "QuadTree.h"
 
 BoidSimulator::BoidSimulator(const std::string& name, BaseSystem* target) : BaseSimulator(name), m_object(target) {
-
+	prevTime = 0;
 };
 
-void updatePosition(Boid* b) {
+void limitVelocity(Boid* b) {
+	double speed = VecLength(b->velocity);
+	if (speed > b->maxSpeed) {
+		VecScale(b->velocity, 1.0 / speed);
+		VecScale(b->velocity, b->maxSpeed);
+	}
+}
+
+void updatePosition(Boid* b, double deltaTime) {
+	limitVelocity(b);
 	Vector posOffset;
 	VecCopy(posOffset, b->velocity);
-	VecScale(posOffset, b->speed);
+	VecScale(posOffset, deltaTime);
 	VecAdd(b->position, b->position, posOffset);
 }
 
@@ -33,7 +42,7 @@ int BoidSimulator::step(double time) {
 	m_object->getState((double*)state);
 
 	for (std::list<Boid*>::iterator it = state->predators->members.begin(); it != state->predators->members.end(); ++it) {
-		updatePosition(*it);
+		updatePosition(*it, deltaTime);
 		checkBoundries(*it);
 	}
 
@@ -50,7 +59,7 @@ int BoidSimulator::step(double time) {
 		avoidPredators(&(*itFlock), state->predators, qTree);
 		for (std::list<Boid*>::iterator it = itFlock->members.begin(); it != itFlock->members.end(); ++it) {
 			Boid* nextBoid = (*it);
-			updatePosition(nextBoid);
+			updatePosition(nextBoid, deltaTime);
 			Flock closeBoids;
 			Circle c = Circle(nextBoid->position[0], nextBoid->position[1], 2);
 			qTree->query(&c, closeBoids.members);
@@ -60,9 +69,9 @@ int BoidSimulator::step(double time) {
 		qTree->freeChildren();
 	}
 	m_object->display();
-	time = prevTime;
 	quadTrees.clear();
 	quadTrees.shrink_to_fit();
+	prevTime = time;
 	return TCL_OK;
 }
 

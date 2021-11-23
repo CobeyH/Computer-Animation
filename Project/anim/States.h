@@ -3,16 +3,16 @@
 #include <list>
 
 struct Boid {
-	Boid(Vector initalPos, Vector initalDir, int index, int flock, bool predator = false) {
+	Boid(Vector initalPos, Vector initalDir, int index, int flock, double speed, bool predator = false) {
 		VecCopy(initalPosition, initalPos);
 		VecCopy(position, initalPos);
 		VecCopy(velocity, initalDir);
-		speed = 0.01;
+		maxSpeed = speed;
 		id = index;
 		flockId = flock;
 		isPredator = predator;
 	}
-	double speed, mass;
+	double maxSpeed, mass;
 	Vector initalPosition;
 	Vector position;
 	Vector velocity;

@@ -37,7 +37,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
-		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT);
+		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, 0.3 + (i % FLOCK_COUNT) * 0.4);
 		flocks[newBoid->flockId].members.push_back(newBoid);
 	}
 	// Create Predators
