@@ -3,7 +3,7 @@
 #include "States.h"
 #include <vector>
 
-#define FLOCK_COUNT 1
+#define FLOCK_COUNT 3
 
 class BoidSystem : public BaseSystem {
 public:

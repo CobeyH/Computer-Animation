@@ -5,6 +5,9 @@
 #include <vector>
 #include "QuadTree.h"
 
+#define SCREEN_EDGE 6
+#define EDGE_MARGIN 1
+
 class BoidSimulator : public BaseSimulator {
 public:
 	BoidSimulator(const std::string& name, BaseSystem* target);

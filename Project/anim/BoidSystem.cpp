@@ -72,12 +72,12 @@ void BoidSystem::reset(double time) {
 }
 
 void drawBoid(Boid* b) {
-	Vector tail, tailOffset, leftWing, rightWing, wingOffset, zAxis;
+	Vector tail, head, tailOffset, leftWing, rightWing, wingOffset, zAxis;
 	setVector(zAxis, 0, 0, 1);
 	glBegin(GL_TRIANGLE_FAN);
 	// Calculate vector from head to tail
 	VecCopy(tailOffset, b->velocity);
-	VecScale(tailOffset, -0.3);
+	VecScale(tailOffset, -0.15);
 	// Calculate vector orthoginal to that vector
 	VecCrossProd(wingOffset, zAxis, tailOffset);
 	VecNormalize(wingOffset);
@@ -86,6 +86,7 @@ void drawBoid(Boid* b) {
 
 	// Calculate tail position
 	VecAdd(tail, b->position, tailOffset);
+	VecSubtract(head, b->position, tailOffset);
 	// Calculate right wing position
 	VecAdd(rightWing, tail, wingOffset);
 	VecScale(tailOffset, 0.4);
@@ -95,7 +96,7 @@ void drawBoid(Boid* b) {
 	VecSubtract(leftWing, tail, wingOffset);
 	VecAdd(leftWing, tailOffset, leftWing);
 	// Draw the boids
-	glVertex3dv(b->position);
+	glVertex3dv(head);
 	glVertex3dv(leftWing);
 	glVertex3dv(tail);
 	glVertex3dv(rightWing);

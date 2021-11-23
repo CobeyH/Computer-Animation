@@ -15,11 +15,11 @@ void updatePosition(Boid* b) {
 
 void checkBoundries(Boid* b) {
 	for (int i = 0; i < 2; i++) {
-		if (b->position[i] < -6) {
-			b->velocity[i] = abs(b->velocity[i]);
+		if (b->position[i] < -SCREEN_EDGE + EDGE_MARGIN) {
+			b->velocity[i] = b->velocity[i] + 0.1;
 		}
-		else if (b->position[i] > 6) {
-			b->velocity[i] = -abs(b->velocity[i]);
+		else if (b->position[i] > SCREEN_EDGE - EDGE_MARGIN) {
+			b->velocity[i] = b->velocity[i] - 0.1;
 		}
 	}
 }
@@ -82,7 +82,7 @@ void BoidSimulator::addCohesion(Boid* b, Vector center, Vector desiredVelocity) 
 	Vector cohesionFactor;
 	zeroVector(cohesionFactor);
 	VecSubtract(cohesionFactor, center, b->position);
-	VecScale(cohesionFactor, 1.0 / 200);
+	VecScale(cohesionFactor, 0.0005);
 	VecAdd(desiredVelocity, desiredVelocity, cohesionFactor);
 
 }
@@ -97,7 +97,7 @@ void BoidSimulator::addAlignment(Boid* b, Flock* flock, Vector desiredVelocity) 
 	}
 	VecScale(alignFactor, 1.0 / (flock->members.size() - 1));
 	VecSubtract(alignFactor, alignFactor, b->velocity);
-	VecScale(alignFactor, 1.0 / 300.0);
+	VecScale(alignFactor, 0.01);
 	VecAdd(desiredVelocity, desiredVelocity, alignFactor);
 }
 
@@ -113,7 +113,7 @@ void BoidSimulator::addSeparation(Boid* b, Flock* flock, Vector desiredVelocity)
 			}
 		}
 	}
-	VecScale(sepFactor, 0.01);
+	VecScale(sepFactor, 0.05);
 	VecAdd(desiredVelocity, desiredVelocity, sepFactor);
 }
 
