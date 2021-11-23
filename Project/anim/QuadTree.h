@@ -2,6 +2,7 @@
 #include <util/vector.h>
 #include "BaseSystem.h"
 #include <vector>
+#include <list>
 #include "States.h"
 
 struct Circle {
@@ -16,10 +17,10 @@ struct Circle {
 class QuadTree : public BaseSystem {
 	public:
 		QuadTree(const std::string& name, double boxLength, Vector origin);
-		bool insert(Boid boid);
-		bool contains(Boid boid);
+		bool insert(Boid* boid);
+		bool contains(Boid* boid);
 		void subdivide();
-		void query(Circle c, std::vector<Boid> &foundBoids);
+		void query(Circle c, std::list<Boid*> &foundBoids);
 		bool intersects(Circle);
 		void display(GLenum mode = GL_RENDER);
 
@@ -30,7 +31,7 @@ class QuadTree : public BaseSystem {
 		QuadTree* southWest;
 		QuadTree* southEast;
 
-		std::vector<Boid> containedBoids;
+		std::vector<Boid*> containedBoids;
 		int capacity;
 		bool divided;
 		double length;

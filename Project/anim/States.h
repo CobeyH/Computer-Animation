@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <list>
 
 struct Boid {
 	Boid(Vector initalPos, Vector initalDir, int index, int flock) {
@@ -18,7 +19,7 @@ struct Boid {
 };
 
 struct Flock {
-	std::vector<Boid> members;
+	std::list<Boid*> members;
 };
 
 struct BoidState {

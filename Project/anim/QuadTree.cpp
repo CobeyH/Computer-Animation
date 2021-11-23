@@ -9,9 +9,9 @@ QuadTree::QuadTree(const std::string& name, double boxLength, Vector origin) : B
 	northWest = NULL;
 }
 
-bool QuadTree::contains(Boid boid) {
-	double x = boid.position[0];
-	double y = boid.position[1];
+bool QuadTree::contains(Boid* boid) {
+	double x = boid->position[0];
+	double y = boid->position[1];
 	double radius = length / 2;
 	// Out of bounds in X direction
 	if (x < center[0] - radius || x > center[0] + radius) {
@@ -23,7 +23,7 @@ bool QuadTree::contains(Boid boid) {
 	return true;
 }
 
-bool QuadTree::insert(Boid boid) {
+bool QuadTree::insert(Boid* boid) {
 	if (!contains(boid)) {
 		return false;
 	}
@@ -77,19 +77,17 @@ bool QuadTree::intersects(Circle c) {
 	if (differenceX <= length / 2 || differenceY <= length / 2) {
 		return true;
 	}
-	double cornerDist = pow(differenceX - length / 2, 2) + pow(differenceY - length / 2, 2);
-
-	return cornerDist <= pow(c.r, 2);
+	return false;
 }
 
-void QuadTree::query(Circle c, std::vector<Boid> &foundBoids) {
+void QuadTree::query(Circle c, std::list<Boid*> &foundBoids) {
 	if (!intersects(c)) {
 		return;
 	}
-	for (Boid b : containedBoids) {
-		if (sqrt(pow(c.x - b.position[0], 2) + pow(c.y - b.position[1], 2)) <= c.r) {
-			foundBoids.push_back(b);
-		}
+	for (int i = 0; i < containedBoids.size(); i++) {
+		//if (sqrt(pow(c.x - containedBoids[i]->position[0], 2) + pow(c.y - containedBoids[i]->position[1], 2)) <= c.r) {
+			foundBoids.push_back(containedBoids[i]);
+		//}
 	}
 	// If there are no children
 	if (northWest == NULL) {

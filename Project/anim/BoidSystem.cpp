@@ -37,7 +37,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
 		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT);
-		flocks[newBoid->flockId].members.push_back(*newBoid);
+		flocks[newBoid->flockId].members.push_back(newBoid);
 	}
 	glutPostRedisplay();
 };
@@ -53,8 +53,9 @@ void BoidSystem::setState(double* p) {
 
 void BoidSystem::reset(double time) {
 	for (int i = 0; i < flocks.size(); i++) {
-		for (int j = 0; j < flocks[i].members.size(); j++) {
-			VecCopy(flocks[i].members[j].position, flocks[i].members[j].initalPosition);
+		// for (int j = 0; j < flocks[i].members.size(); j++) {
+		for (std::list<Boid*>::iterator iter = flocks[i].members.begin(); iter != flocks[i].members.end(); ++i) {
+			VecCopy((*iter)->position, (*iter)->initalPosition);
 		}
 	}
 }
@@ -86,10 +87,10 @@ void BoidSystem::display(GLenum mode) {
 		default:
 			set_colour(1, 1, 1);
 		}
-		for (Boid b : flocks[i].members) {
+		for (Boid* b : flocks[i].members) {
 			glBegin(GL_TRIANGLE_FAN);
 			// Calculate vector from head to tail
-			VecCopy(tailOffset, b.velocity);
+			VecCopy(tailOffset, b->velocity);
 			VecScale(tailOffset, -0.3);
 			// Calculate vector orthoginal to that vector
 			VecCrossProd(wingOffset, zAxis, tailOffset);
@@ -98,7 +99,7 @@ void BoidSystem::display(GLenum mode) {
 
 
 			// Calculate tail position
-			VecAdd(tail, b.position, tailOffset);
+			VecAdd(tail, b->position, tailOffset);
 			// Calculate right wing position
 			VecAdd(rightWing, tail, wingOffset);
 			VecScale(tailOffset, 0.4);
@@ -108,7 +109,7 @@ void BoidSystem::display(GLenum mode) {
 			VecSubtract(leftWing, tail, wingOffset);
 			VecAdd(leftWing, tailOffset, leftWing);
 			// Draw the boids
-			glVertex3dv(b.position);
+			glVertex3dv(b->position);
 			glVertex3dv(leftWing);
 			glVertex3dv(tail);
 			glVertex3dv(rightWing);
