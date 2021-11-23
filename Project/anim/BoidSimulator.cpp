@@ -6,6 +6,24 @@ BoidSimulator::BoidSimulator(const std::string& name, BaseSystem* target) : Base
 
 };
 
+void updatePosition(Boid* b) {
+	Vector posOffset;
+	VecCopy(posOffset, b->velocity);
+	VecScale(posOffset, b->speed);
+	VecAdd(b->position, b->position, posOffset);
+}
+
+void checkBoundries(Boid* b) {
+	for (int i = 0; i < 2; i++) {
+		if (b->position[i] < -6) {
+			b->velocity[i] = abs(b->velocity[i]);
+		}
+		else if (b->position[i] > 6) {
+			b->velocity[i] = -abs(b->velocity[i]);
+		}
+	}
+}
+
 int BoidSimulator::step(double time) {
 	BoidState* state = new BoidState();
 	double deltaTime = time - prevTime;
@@ -14,7 +32,7 @@ int BoidSimulator::step(double time) {
 	}
 	m_object->getState((double*)state);
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
-		Vector posOffset, center, origin;
+		Vector center, origin;
 		zeroVector(origin);
 		QuadTree* qTree = new QuadTree("qTree", 12, origin); // MEMORY LEAK
 		for (Boid* b : itFlock->members) {
@@ -25,23 +43,15 @@ int BoidSimulator::step(double time) {
 		avoidPredators(&(*itFlock), state->predators, qTree);
 		for (std::list<Boid*>::iterator it = itFlock->members.begin(); it != itFlock->members.end(); ++it) {
 			Boid* nextBoid = (*it);
-			VecCopy(posOffset, nextBoid->velocity);
-			VecScale(posOffset, nextBoid->speed);
-			VecAdd(nextBoid->position, nextBoid->position, posOffset);
+			updatePosition(nextBoid);
 			Flock* closeBoids = new Flock();
 			Circle* c = new Circle(nextBoid->position[0], nextBoid->position[1], 2);
-			// Check if the boid has gone out of bounds
-			for (int i = 0; i < 2; i++) {
-				if (nextBoid->position[i] < -6 ) {
-					nextBoid->velocity[i] = abs(nextBoid->velocity[i]);
-				}
-				else if (nextBoid->position[i] > 6) {
-					nextBoid->velocity[i] = -abs(nextBoid->velocity[i]);
-				}
-			}
 			qTree->query(*c, closeBoids->members);
+			checkBoundries(nextBoid);
 			updateDirection(&(*nextBoid), center, closeBoids);
 		}
+		qTree->freeChildren();
+		free(qTree);
 	}
 	m_object->display();
 	time = prevTime;

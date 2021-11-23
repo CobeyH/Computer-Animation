@@ -23,6 +23,7 @@ class QuadTree : public BaseSystem {
 		void query(Circle c, std::list<Boid*> &foundBoids);
 		bool intersects(Circle);
 		void display(GLenum mode = GL_RENDER);
+		void freeChildren();
 
 	protected:
 		// Children

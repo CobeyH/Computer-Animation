@@ -85,9 +85,9 @@ void QuadTree::query(Circle c, std::list<Boid*> &foundBoids) {
 		return;
 	}
 	for (int i = 0; i < containedBoids.size(); i++) {
-		//if (sqrt(pow(c.x - containedBoids[i]->position[0], 2) + pow(c.y - containedBoids[i]->position[1], 2)) <= c.r) {
+		if (sqrt(pow(c.x - containedBoids[i]->position[0], 2) + pow(c.y - containedBoids[i]->position[1], 2)) <= c.r) {
 			foundBoids.push_back(containedBoids[i]);
-		//}
+		}
 	}
 	// If there are no children
 	if (northWest == NULL) {
@@ -115,4 +115,18 @@ void QuadTree::display(GLenum mode) {
 		southWest->display(mode);
 		southEast->display(mode);
 	}
+}
+
+void QuadTree::freeChildren() {
+	if (!divided) {
+		return;
+	}
+	northWest->freeChildren();
+	northEast->freeChildren();
+	southWest->freeChildren();
+	southEast->freeChildren();
+	free(northWest);
+	free(northEast);
+	free(southWest);
+	free(southEast);
 }
