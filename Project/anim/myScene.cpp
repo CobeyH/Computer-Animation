@@ -47,14 +47,28 @@ void myMouse(int button, int state, int x, int y)
 
 	if( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN )
 	{
-		animTcl::OutputMessage(
-			"My mouse received a mouse button press event\n");
-
+		double transformedX = x / (2000.0 / 12.0) - 6;
+		double transformedY = y / (-1000.0 / 12.0) + 6;
+		BaseSystem* systemGetter = GlobalResourceManager::use()->getSystem("boidSystem");
+		BoidState state;
+		systemGetter->getState((double*) &state);
+		double closest = 10000;
+		int idOfClosest = -1;
+		for (auto it = state.flocks->begin(); it != state.flocks->end(); ++it) {
+			for (std::list<Boid*>::iterator bIt = it->members.begin(); bIt != it->members.end(); ++bIt) {
+				Boid* nextBoid = *bIt;
+				double distanceToNextBoid = sqrt(pow(nextBoid->position[0] - transformedX, 2) + pow(nextBoid->position[1] - transformedY, 2));
+				if (distanceToNextBoid < closest) {
+					closest = distanceToNextBoid;
+					idOfClosest = nextBoid->id;
+				}
+			}
+		}
+		animTcl::OutputMessage("Closest Boid ID %d", idOfClosest);
 	}
 	if( button == GLUT_LEFT_BUTTON && state == GLUT_UP )
 	{
-		animTcl::OutputMessage(
-			"My mouse received a mouse button release event\n") ;
+
 	}
 }	// myMouse
 

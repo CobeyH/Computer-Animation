@@ -41,14 +41,14 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		flocks[newBoid->flockId].members.push_back(newBoid);
 	}
 	// Create Predators
-	int numPredators = numBoids / 100 + 1;
+	/*int numPredators = numBoids / 100 + 1;
 	for (int i = 0; i < numPredators; i++) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
 		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, true);
 		predators->members.push_back(newBoid);
-	}
+	}*/
 	glutPostRedisplay();
 };
 

@@ -4,6 +4,7 @@
 #include "States.h"
 #include <vector>
 #include "QuadTree.h"
+#include <thread>
 
 #define SCREEN_EDGE 6
 #define EDGE_MARGIN 0.2
@@ -21,6 +22,8 @@ protected:
 	double prevTime;
 	BaseSystem* m_object;
 	std::vector<QuadTree*> quadTrees;
+	void updateAllBoids(BoidState* state, double deltaTime);
+	void updateFlockMembers(Flock* flock, Flock* predators, double deltaTime);
 	void calculateFlockCenter(Vector center, Flock* flock);
 	void updateDirection(Boid* b, Vector center, Flock* flock);
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);

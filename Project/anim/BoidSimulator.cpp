@@ -48,41 +48,57 @@ void BoidSimulator::checkPredatorFood(Boid* p, Flock* flock) {
 	}
 }
 
-int BoidSimulator::step(double time) {
-	BoidState* state = new BoidState();
-	double deltaTime = time - prevTime;
-	if (deltaTime < 0) {
-		deltaTime = time;
-	}
-	m_object->getState((double*)state);
+void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double deltaTime) {
+	Vector center, origin;
+	zeroVector(origin);
 
+	QuadTree* qTree = new QuadTree("qTree", 12, origin);
+	for (Boid* b : flock->members) {
+		qTree->insert(b);
+	}
+	quadTrees.push_back(qTree);
+	calculateFlockCenter(center, flock);
+	avoidPredators(flock, predators, qTree);
+	for (std::list<Boid*>::iterator it = flock->members.begin(); it != flock->members.end(); ++it) {
+		Boid* nextBoid = (*it);
+		updatePosition(nextBoid, deltaTime);
+		Flock closeBoids;
+		Circle c = Circle(nextBoid->position[0], nextBoid->position[1], 2);
+		qTree->query(&c, closeBoids.members);
+		checkBoundries(nextBoid);
+		updateDirection(&(*nextBoid), center, &closeBoids);
+	}
+	qTree->freeChildren();
+}
+
+void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
+	// Update Predator Positions
 	for (std::list<Boid*>::iterator it = state->predators->members.begin(); it != state->predators->members.end(); ++it) {
 		updatePosition(*it, deltaTime);
 		checkBoundries(*it);
 	}
 
+	//std::vector<std::thread> ThreadVector;
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
-		Vector center, origin;
-		zeroVector(origin);
-		
-		QuadTree* qTree = new QuadTree("qTree", 12, origin);
-		for (Boid* b : itFlock->members) {
-			qTree->insert(b);
-		}
-		quadTrees.push_back(qTree);
-		calculateFlockCenter(center, &(*itFlock));
-		avoidPredators(&(*itFlock), state->predators, qTree);
-		for (std::list<Boid*>::iterator it = itFlock->members.begin(); it != itFlock->members.end(); ++it) {
-			Boid* nextBoid = (*it);
-			updatePosition(nextBoid, deltaTime);
-			Flock closeBoids;
-			Circle c = Circle(nextBoid->position[0], nextBoid->position[1], 2);
-			qTree->query(&c, closeBoids.members);
-			checkBoundries(nextBoid);
-			updateDirection(&(*nextBoid), center, &closeBoids);
-		}
-		qTree->freeChildren();
+		//ThreadVector.emplace_back([&]() {updateFlockMembers(&(*itFlock), state->predators, deltaTime);});
+		updateFlockMembers(&(*itFlock), state->predators, deltaTime);
 	}
+
+	/*for (auto& t : ThreadVector) {
+		t.join();
+	}*/
+}
+
+int BoidSimulator::step(double time) {
+	double deltaTime = time - prevTime;
+	if (deltaTime < 0) {
+		deltaTime = time;
+	}
+	BoidState* state = new BoidState();
+	m_object->getState((double*)state);
+
+	updateAllBoids(state, deltaTime);
+	
 	m_object->display();
 	quadTrees.clear();
 	quadTrees.shrink_to_fit();
