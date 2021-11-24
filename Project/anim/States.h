@@ -11,14 +11,14 @@ struct Boid {
 		id = index;
 		flockId = flock;
 		isPredator = predator;
-		hasEaten = false;
+		hunger = 0;
 	}
 	double maxSpeed, mass;
 	Vector initalPosition;
 	Vector position;
 	Vector velocity;
-	int id, flockId;
-	bool isPredator, hasEaten;
+	int id, flockId, hunger;
+	bool isPredator;
 };
 
 struct Flock {

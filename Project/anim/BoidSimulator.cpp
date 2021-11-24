@@ -14,7 +14,12 @@ void limitVelocity(Boid* b) {
 	}
 }
 
-void updatePosition(Boid* b, double deltaTime) {
+void BoidSimulator::updatePosition(Boid* b, double deltaTime) {
+	b->hunger++;
+	if (b->hunger >= STARVATION  && !b->isPredator) {
+		starvedBoids.push_back(b);
+		return;
+	}
 	limitVelocity(b);
 	Vector posOffset;
 	VecCopy(posOffset, b->velocity);
@@ -33,16 +38,20 @@ void checkBoundries(Boid* b) {
 	}
 }
 
+void BoidSimulator::killBoid(Boid* b) {
+	BoidSetState state;
+	state.toDelete = b;
+	m_object->setState((double*)&state);
+}
+
 void BoidSimulator::checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize) {
 	for (int i = 0; i < flockSize; i++) {
 		Boid* nextBoid = closeBoids[i];
 		double x = nextBoid->position[0] - p->position[0];
 		double y = nextBoid->position[1] - p->position[1];
 		if (x*x + y*y < 0.5) {
-			p->hasEaten = true;
-			BoidSetState state;
-			state.toDelete = nextBoid;
-			m_object->setState((double*) &state);
+			p->hunger = 0;
+			killBoid(nextBoid);
 			return;
 		}
 	}
@@ -91,10 +100,10 @@ void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
 	std::vector<std::thread> t;
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
 		std::thread th = std::thread([this, itFlock, state, deltaTime]() { updateFlockMembers(&(*itFlock), state->predators, deltaTime); });
-		t.push_back(std::move(th));  //<=== move (after, th doesn't hold it anymore 
+		t.push_back(std::move(th));
 	}
 
-	for (auto& th : t) {              //<=== range-based for uses & reference
+	for (auto& th : t) {
 		th.join();
 	}
 }
@@ -104,10 +113,14 @@ int BoidSimulator::step(double time) {
 	if (deltaTime < 0) {
 		deltaTime = time;
 	}
+	starvedBoids.clear();
 	BoidState* state = new BoidState();
 	m_object->getState((double*)state);
 
 	updateAllBoids(state, deltaTime);
+	for (auto it = starvedBoids.begin(); it != starvedBoids.end(); ++it) {
+		killBoid(*it);
+	}
 	
 	m_object->display();
 	prevTime = time;

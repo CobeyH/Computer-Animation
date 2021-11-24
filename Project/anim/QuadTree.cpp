@@ -3,6 +3,7 @@
 	
 QuadTree::QuadTree(const std::string& name, double boxLength, Vector origin) : BaseSystem(name) {
 	capacity = 5;
+	amountFilled = 0;
 	divided = false;
 	length = boxLength;
 	VecCopy(center, origin);
@@ -28,8 +29,9 @@ bool QuadTree::insert(Boid* boid) {
 		return false;
 	}
 	// If there is room in the current quad then just insert it.
-	if (containedBoids.size() < capacity) {
-		containedBoids.push_back(boid);
+	if (amountFilled < capacity) {
+		containedBoids[amountFilled] = boid;
+		amountFilled++;
 		return true;
 	}
 
@@ -84,9 +86,9 @@ void QuadTree::query(Circle* c, Boid* foundBoids[], int &i) {
 	if (!intersects(c)) {
 		return;
 	}
-	for (auto it = containedBoids.begin(); it != containedBoids.end(); ++it) {
-		if (abs(c->x - (*it)->position[0]) + abs(c->y - (*it)->position[1]) <= c->r) {
-			foundBoids[i++] = *it;
+	for (int index = 0; index < amountFilled; index++) {
+		if (abs(c->x - containedBoids[index]->position[0]) + abs(c->y - containedBoids[index]->position[1]) <= c->r) {
+			foundBoids[i++] = containedBoids[index];
 		}
 	}
 	// If there are no children

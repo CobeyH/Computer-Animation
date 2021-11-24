@@ -32,7 +32,8 @@ class QuadTree : public BaseSystem {
 		QuadTree* southWest;
 		QuadTree* southEast;
 
-		std::list<Boid*> containedBoids;
+		Boid* containedBoids[5];
+		int amountFilled;
 		int capacity;
 		bool divided;
 		double length;
