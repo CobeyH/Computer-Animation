@@ -80,23 +80,23 @@ bool QuadTree::intersects(Circle* c) {
 	return false;
 }
 
-void QuadTree::query(Circle* c, std::list<Boid*> &foundBoids) {
+void QuadTree::query(Circle* c, Boid* foundBoids[], int &i) {
 	if (!intersects(c)) {
 		return;
 	}
-	for (int i = 0; i < containedBoids.size(); i++) {
-		if (sqrt(pow(c->x - containedBoids[i]->position[0], 2) + pow(c->y - containedBoids[i]->position[1], 2)) <= c->r) {
-			foundBoids.push_back(containedBoids[i]);
+	for (auto it = containedBoids.begin(); it != containedBoids.end(); ++it) {
+		if (abs(c->x - (*it)->position[0]) + abs(c->y - (*it)->position[1]) <= c->r) {
+			foundBoids[i++] = *it;
 		}
 	}
 	// If there are no children
 	if (northWest == NULL) {
 		return;
 	}
-	northWest->query(c, foundBoids);
-	northEast->query(c, foundBoids);
-	southWest->query(c, foundBoids);
-	southEast->query(c, foundBoids);
+	northWest->query(c, foundBoids, i);
+	northEast->query(c, foundBoids, i);
+	southWest->query(c, foundBoids, i);
+	southEast->query(c, foundBoids, i);
 }
 
 void QuadTree::display(GLenum mode) {

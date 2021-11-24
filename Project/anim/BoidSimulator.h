@@ -21,15 +21,14 @@ public:
 protected:
 	double prevTime;
 	BaseSystem* m_object;
-	std::vector<QuadTree*> quadTrees;
 	void updateAllBoids(BoidState* state, double deltaTime);
 	void updateFlockMembers(Flock* flock, Flock* predators, double deltaTime);
 	void calculateFlockCenter(Vector center, Flock* flock);
-	void updateDirection(Boid* b, Vector center, Flock* flock);
+	void updateDirection(Boid* b, Vector center, Boid* closeBoids[], int size);
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
-	void addAlignment(Boid* b, Flock* flock, Vector desiredVelocity);
-	void addSeparation(Boid* b, Flock* flock, Vector desiredVelocity);
+	void addAlignment(Boid* b, Boid** closeBoids, int size, Vector desiredVelocity);
+	void addSeparation(Boid* b, Boid** closeBoids, int size, Vector desiredVelocity);
 	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree* qTree);
-	void checkPredatorFood(Boid* p, Flock* flock);
+	void checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize);
 };
 
