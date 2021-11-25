@@ -7,10 +7,27 @@
 #include <vector>
 #include <thread>
 
-#define SCREEN_EDGE 6
-#define EDGE_MARGIN 0.2
-
+#define PREDATOR_STARVATION_THREASHOLD 0.25
+#define BOID_STARVATION_THREASHOLD 0.25
 #define STARVATION 3000
+
+#define PREDATOR_INFLUENCE_RANGE 0.5
+#define BOID_PERCEPTION_RANGE 2
+#define BOID_EATING_DISTANCE 0.5
+
+#define SCREEN_WIDTH 12
+#define SCREEN_EDGE SCREEN_WIDTH / 2
+#define EDGE_MARGIN 0.2
+#define WALL_REPULSION 0.05
+
+#define PREDATOR_AVOIDANCE_STRENGTH 0.5
+#define TURNING_RATE 0.05
+
+#define COHESION_STRENGTH 0.0005
+#define ALIGNMENT_STRENGTH 0.01
+#define SEPARATION_STRENGTH 0.05
+
+
 
 class BoidSimulator : public BaseSimulator {
 public:
@@ -28,7 +45,6 @@ protected:
 	std::list<Boid*> starvedBoids;
 	BaseSystem* foodSystem;
 	QuadTree<Food>* foodQTree;
-	Food* temp;
 	void updateAllBoids(BoidState* state, double deltaTime);
 	void updateFlockMembers(Flock* flock, Flock* predators, double deltaTime);
 	void updatePosition(Boid* b, double deltaTime);

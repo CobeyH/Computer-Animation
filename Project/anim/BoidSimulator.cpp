@@ -7,7 +7,6 @@ BoidSimulator::BoidSimulator(const std::string& name, BaseSystem* target) : Base
 	Vector origin;
 	zeroVector(origin);
 	foodQTree = new QuadTree<Food>("qTree", 12, origin);
-	temp = NULL; //TODO: DELETE
 };
 
 void limitVelocity(Boid* b) {
@@ -34,10 +33,10 @@ void BoidSimulator::updatePosition(Boid* b, double deltaTime) {
 void checkBoundries(Boid* b) {
 	for (int i = 0; i < 2; i++) {
 		if (b->position[i] < -SCREEN_EDGE + EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] + 0.05;
+			b->velocity[i] = b->velocity[i] + WALL_REPULSION;
 		}
 		else if (b->position[i] > SCREEN_EDGE - EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] - 0.05;
+			b->velocity[i] = b->velocity[i] - WALL_REPULSION;
 		}
 	}
 }
@@ -50,14 +49,14 @@ void BoidSimulator::killBoid(Boid* b) {
 
 void BoidSimulator::checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize) {
 	// Predators will not hunt if they are not hungry
-	if (p->hunger < 0.25 * STARVATION) {
+	if (p->hunger < PREDATOR_STARVATION_THREASHOLD * STARVATION) {
 		return;
 	}
 	for (int i = 0; i < flockSize; i++) {
 		Boid* nextBoid = closeBoids[i];
 		double x = nextBoid->position[0] - p->position[0];
 		double y = nextBoid->position[1] - p->position[1];
-		if (x*x + y*y < 0.5) {
+		if (x*x + y*y < PREDATOR_INFLUENCE_RANGE) {
 			p->hunger = 0;
 			killBoid(nextBoid);
 			return;
@@ -79,14 +78,14 @@ void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double de
 	for (std::list<Boid*>::iterator it = flock->members.begin(); it != flock->members.end(); ++it) {
 		Boid* nextBoid = (*it);
 		updatePosition(nextBoid, deltaTime);
-		Circle c = Circle(nextBoid->position[0], nextBoid->position[1], 2);
+		Circle c = Circle(nextBoid->position[0], nextBoid->position[1], BOID_PERCEPTION_RANGE);
 		int flockSize = 0;
 		qTree->query(&c, foundBoids, flockSize);
 		foundBoids[flockSize] = NULL;
 		checkBoundries(nextBoid);
 		updateDirection(&(*nextBoid), center, foundBoids, flockSize);
 	}
-	//free(foundBoids);
+	free(foundBoids);
 	qTree->freeChildren();
 }
 
@@ -101,8 +100,6 @@ void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
 	//for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
 	//	updateFlockMembers(&(*itFlock), state->predators, deltaTime);
 	//}
-
-
 
 	std::vector<std::thread> t;
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
@@ -130,6 +127,7 @@ int BoidSimulator::step(double time) {
 	}
 	
 	m_object->display();
+	delete(state);
 	prevTime = time;
 	return TCL_OK;
 
@@ -145,11 +143,11 @@ void BoidSimulator::updateDirection(Boid* b, Vector center, Boid* closeBoids[], 
 		addAlignment(b, closeBoids, size, desiredVelocity);
 		addSeparation(b, closeBoids, size, desiredVelocity);
 	}
-	if (b->hunger > STARVATION * 0.2) {
+	if (b->hunger > STARVATION * BOID_STARVATION_THREASHOLD) {
 		addFoodAttraction(b, desiredVelocity);
 	}
 	VecSubtract(steeringForce, desiredVelocity, b->velocity);
-	VecScale(steeringForce, 0.05);
+	VecScale(steeringForce, TURNING_RATE);
 	VecAdd(b->velocity, steeringForce, b->velocity);
 	VecNormalize(b->velocity);
 	
@@ -159,7 +157,7 @@ void BoidSimulator::addCohesion(Boid* b, Vector center, Vector desiredVelocity) 
 	Vector cohesionFactor;
 	zeroVector(cohesionFactor);
 	VecSubtract(cohesionFactor, center, b->position);
-	VecScale(cohesionFactor, 0.0005);
+	VecScale(cohesionFactor, COHESION_STRENGTH);
 	VecAdd(desiredVelocity, desiredVelocity, cohesionFactor);
 
 }
@@ -174,7 +172,7 @@ void BoidSimulator::addAlignment(Boid* b, Boid* closeBoids[], int size, Vector d
 	}
 	VecScale(alignFactor, 1.0 / (size - 1));
 	VecSubtract(alignFactor, alignFactor, b->velocity);
-	VecScale(alignFactor, 0.01);
+	VecScale(alignFactor, ALIGNMENT_STRENGTH);
 	VecAdd(desiredVelocity, desiredVelocity, alignFactor);
 }
 
@@ -190,7 +188,7 @@ void BoidSimulator::addSeparation(Boid* b, Boid* closeBoids[], int size, Vector 
 			}
 		}
 	}
-	VecScale(sepFactor, 0.05);
+	VecScale(sepFactor, SEPARATION_STRENGTH);
 	VecAdd(desiredVelocity, desiredVelocity, sepFactor);
 }
 
@@ -213,12 +211,11 @@ void BoidSimulator::addFoodAttraction(Boid* b, Vector desiredVelocity) {
 			nearestFoodDist = distToNextFood;
 		}
 	}
-	temp = foundFood[nearestFoodIndex];
 	// TODO: Possible performance improvement. Use the first found food instead of the closest.
 	Vector dirToFood;
 	VecSubtract(dirToFood, foundFood[nearestFoodIndex]->position, b->position);
 	double distToFood = VecLength(dirToFood);
-	if (distToFood < 0.5) {
+	if (distToFood < BOID_EATING_DISTANCE) {
 		b->hunger = 0;
 	}
 	else {
@@ -226,7 +223,7 @@ void BoidSimulator::addFoodAttraction(Boid* b, Vector desiredVelocity) {
 		VecScale(dirToFood, b->hunger / (double)STARVATION);
 		VecAdd(desiredVelocity, desiredVelocity, dirToFood);
 	}
-	
+	free(foundFood);
 }
 
 void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTree<Boid>* qTree) {
@@ -242,12 +239,12 @@ void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTre
 			Boid* b = foundBoids[i];
 			Vector displacement;
 			VecSubtract(displacement, b->position, p->position);
-			VecScale(displacement, 0.5);
+			VecScale(displacement, PREDATOR_AVOIDANCE_STRENGTH);
 			VecAdd(b->velocity, b->velocity, displacement);
 			VecNormalize(b->velocity);
 		}
 	}
-	//free(foundBoids);
+	free(foundBoids);
 }
 
 void BoidSimulator::calculateFlockCenter(Vector center, Flock* flock) {
@@ -269,13 +266,13 @@ void BoidSimulator::registerFoodSystem(BaseSystem* system) {
 }
 
 void BoidSimulator::display(GLenum mode) {
-	if (temp != NULL) {
-		glPointSize(10);
-		glBegin(GL_POINTS);
-		set_colour(1, 0, 0);
-		glVertex3dv(temp->position);
-		glEnd();
-	}
+	//if (temp != NULL) {
+	//	glPointSize(10);
+	//	glBegin(GL_POINTS);
+	//	set_colour(1, 0, 0);
+	//	glVertex3dv(temp->position);
+	//	glEnd();
+	//}
 
 	/*for (QuadTree* qTree : quadTrees) {
 		qTree->display();
