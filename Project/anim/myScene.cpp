@@ -23,6 +23,7 @@
 #include "myScene.h"
 #include "BoidSystem.h"
 #include "BoidSimulator.h"
+#include "FoodSystem.h"
 
 
 int g_testVariable = 10;
@@ -110,7 +111,13 @@ void MakeScene(void)
 	// make sure it was registered successfully
 	assert( success );
 
+	FoodSystem* fSystem = new FoodSystem("foodSystem");
+
+	success = GlobalResourceManager::use()->addSystem(fSystem, true);
+
 	BoidSimulator* boidSim = new BoidSimulator("boidSim", bSystem);
+
+	boidSim->registerFoodSystem(fSystem);
 
 	success = GlobalResourceManager::use()->addSimulator(boidSim, true);
 

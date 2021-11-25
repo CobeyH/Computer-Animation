@@ -21,6 +21,10 @@ struct Boid {
 	bool isPredator;
 };
 
+struct Food {
+	Vector position;
+};
+
 struct Flock {
 	std::list<Boid*> members;
 };
@@ -32,4 +36,9 @@ struct BoidState {
 
 struct BoidSetState {
 	Boid* toDelete;
+};
+
+struct GetFoodState {
+	Food** food;
+	int foodQuantity;
 };

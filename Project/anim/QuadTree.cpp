@@ -1,7 +1,8 @@
 #include "QuadTree.h"
 #include "BaseSystem.h"
 	
-QuadTree::QuadTree(const std::string& name, double boxLength, Vector origin) : BaseSystem(name) {
+template <typename T>
+QuadTree<T>::QuadTree(const std::string& name, double boxLength, Vector origin) : BaseSystem(name) {
 	capacity = 5;
 	amountFilled = 0;
 	divided = false;
@@ -10,7 +11,8 @@ QuadTree::QuadTree(const std::string& name, double boxLength, Vector origin) : B
 	northWest = NULL;
 }
 
-bool QuadTree::contains(Boid* boid) {
+template <typename T>
+bool QuadTree<T>::contains(T* boid) {
 	double x = boid->position[0];
 	double y = boid->position[1];
 	double radius = length / 2;
@@ -24,7 +26,8 @@ bool QuadTree::contains(Boid* boid) {
 	return true;
 }
 
-bool QuadTree::insert(Boid* boid) {
+template <typename T>
+bool QuadTree<T>::insert(T* boid) {
 	if (!contains(boid)) {
 		return false;
 	}
@@ -45,7 +48,8 @@ bool QuadTree::insert(Boid* boid) {
 		   southEast->insert(boid);
 }
 
-void QuadTree::subdivide() {
+template <typename T>
+void QuadTree<T>::subdivide() {
 	double currX = center[0];
 	double currY = center[1];
 	double newLength = length / 2;
@@ -67,7 +71,8 @@ void QuadTree::subdivide() {
 	divided = true;
 }
 
-bool QuadTree::intersects(Circle* c) {
+template <typename T>
+bool QuadTree<T>::intersects(Circle* c) {
 	double differenceX = abs(c->x - center[0]);
 	double differenceY = abs(c->y - center[1]);
 
@@ -82,7 +87,8 @@ bool QuadTree::intersects(Circle* c) {
 	return false;
 }
 
-void QuadTree::query(Circle* c, Boid* foundBoids[], int &i) {
+template<typename T>
+void QuadTree<T>::query(Circle* c, T* foundBoids[], int &i) {
 	if (!intersects(c)) {
 		return;
 	}
@@ -101,7 +107,8 @@ void QuadTree::query(Circle* c, Boid* foundBoids[], int &i) {
 	southEast->query(c, foundBoids, i);
 }
 
-void QuadTree::display(GLenum mode) {
+template<typename T>
+void QuadTree<T>::display(GLenum mode) {
 
 	if (!divided) {
 		glBegin(GL_LINE_LOOP);
@@ -119,7 +126,8 @@ void QuadTree::display(GLenum mode) {
 	}
 }
 
-void QuadTree::freeChildren() {
+template<typename T>
+void QuadTree<T>::freeChildren() {
 	if (divided) {
 		northWest->freeChildren();
 		northEast->freeChildren();

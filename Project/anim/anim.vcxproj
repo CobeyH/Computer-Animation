@@ -100,6 +100,7 @@
     <ClCompile Include="BaseSimulator.cpp" />
     <ClCompile Include="BoidSimulator.cpp" />
     <ClCompile Include="BoidSystem.cpp" />
+    <ClCompile Include="FoodSystem.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
     <ClCompile Include="myScene.cpp" />
     <ClCompile Include="QuadTree.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="BaseSimulator.h" />
     <ClInclude Include="BoidSimulator.h" />
     <ClInclude Include="BoidSystem.h" />
+    <ClInclude Include="FoodSystem.h" />
     <ClInclude Include="GlobalResourceManager.h" />
     <ClInclude Include="myScene.h" />
     <ClInclude Include="QuadTree.h" />

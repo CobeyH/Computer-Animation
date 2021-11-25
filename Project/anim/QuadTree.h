@@ -14,13 +14,14 @@ struct Circle {
 	double x, y, r;
 };
 
+template <class T>
 class QuadTree : public BaseSystem {
 	public:
 		QuadTree(const std::string& name, double boxLength, Vector origin);
-		bool insert(Boid* boid);
-		bool contains(Boid* boid);
+		bool insert(T* boid);
+		bool contains(T* boid);
 		void subdivide();
-		void query(Circle* c, Boid* foundBoids[], int &i);
+		void query(Circle* c, T* foundBoids[], int &i);
 		bool intersects(Circle* c);
 		void display(GLenum mode = GL_RENDER);
 		void freeChildren();
@@ -32,7 +33,7 @@ class QuadTree : public BaseSystem {
 		QuadTree* southWest;
 		QuadTree* southEast;
 
-		Boid* containedBoids[5];
+		T* containedBoids[5];
 		int amountFilled;
 		int capacity;
 		bool divided;
@@ -41,3 +42,5 @@ class QuadTree : public BaseSystem {
 
 };
 
+template class QuadTree<Boid>;
+template class QuadTree<Food>;

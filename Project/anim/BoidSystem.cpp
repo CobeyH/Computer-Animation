@@ -110,6 +110,7 @@ void drawBoid(Boid* b) {
 void BoidSystem::display(GLenum mode) {
 	glPointSize(3);
 	set_colour(0.0, 1.0, 0.0);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
 	
 	for (int i = 0; i < flocks.size(); i++) {
@@ -140,6 +141,7 @@ void BoidSystem::display(GLenum mode) {
 	for (std::list<Boid*>::iterator it = predators->members.begin(); it != predators->members.end(); ++it) {
 		drawBoid((*it));
 	}
+	glPopAttrib();
 }
 
 int BoidSystem::command(int argc, myCONST_SPEC char** argv) {

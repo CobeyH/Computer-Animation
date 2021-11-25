@@ -2,14 +2,15 @@
 #include "BaseSimulator.h"
 #include "BaseSystem.h"
 #include "States.h"
-#include <vector>
 #include "QuadTree.h"
+#include "FoodSystem.h"
+#include <vector>
 #include <thread>
 
 #define SCREEN_EDGE 6
 #define EDGE_MARGIN 0.2
 
-#define STARVATION 1000
+#define STARVATION 3000
 
 class BoidSimulator : public BaseSimulator {
 public:
@@ -20,10 +21,14 @@ public:
 		return 0;
 	};
 	void display(GLenum mode = GL_RENDER);
+	void registerFoodSystem(BaseSystem* system);
 protected:
 	double prevTime;
 	BaseSystem* m_object;
 	std::list<Boid*> starvedBoids;
+	BaseSystem* foodSystem;
+	QuadTree<Food>* foodQTree;
+	Food* temp;
 	void updateAllBoids(BoidState* state, double deltaTime);
 	void updateFlockMembers(Flock* flock, Flock* predators, double deltaTime);
 	void updatePosition(Boid* b, double deltaTime);
@@ -32,7 +37,8 @@ protected:
 	void addCohesion(Boid* b, Vector center, Vector desiredVelocity);
 	void addAlignment(Boid* b, Boid** closeBoids, int size, Vector desiredVelocity);
 	void addSeparation(Boid* b, Boid** closeBoids, int size, Vector desiredVelocity);
-	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree* qTree);
+	void addFoodAttraction(Boid* b, Vector desiredVelocity);
+	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree<Boid>* qTree);
 	void checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize);
 	void killBoid(Boid* b);
 };
