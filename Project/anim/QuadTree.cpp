@@ -75,13 +75,14 @@ template <typename T>
 bool QuadTree<T>::intersects(Circle* c) {
 	double differenceX = abs(c->x - center[0]);
 	double differenceY = abs(c->y - center[1]);
+	double l2 = length / 2;
 
 	// There is no way they can overlap if the distance is greater than half 
 	// the square length + radius of circle
-	if (differenceX > length / 2 + c->r || differenceY > length / 2 + c->r) {
+	if (differenceX > l2 + c->r || differenceY > l2 + c->r) {
 		return false;
 	}
-	if (differenceX <= length / 2 || differenceY <= length / 2) {
+	if (differenceX <= l2 || differenceY <= l2) {
 		return true;
 	}
 	return false;

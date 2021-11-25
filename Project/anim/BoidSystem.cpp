@@ -81,11 +81,11 @@ void drawBoid(Boid* b) {
 	VecCopy(direction, b->velocity);
 	VecNormalize(direction);
 	VecCopy(tailOffset, direction);
-	VecScale(tailOffset, -0.1);
+	VecScale(tailOffset, -0.075);
 	// Calculate vector orthoginal to that vector
 	VecCrossProd(wingOffset, zAxis, tailOffset);
 	VecNormalize(wingOffset);
-	VecScale(wingOffset, 0.1);
+	VecScale(wingOffset, 0.075);
 
 
 	// Calculate tail position
@@ -93,7 +93,7 @@ void drawBoid(Boid* b) {
 	VecSubtract(head, b->position, tailOffset);
 	// Calculate right wing position
 	VecAdd(rightWing, tail, wingOffset);
-	VecScale(tailOffset, 0.2);
+	VecScale(tailOffset, 0.4);
 	VecAdd(rightWing, tailOffset, rightWing);
 
 	// Calculate left wing position

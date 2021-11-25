@@ -2,23 +2,27 @@
 #include <vector>
 #include <list>
 
+struct Attributes {
+	double mass, cohesion, separation, align, maxSpeed;
+};
+
 struct Boid {
 	Boid(Vector initalPos, Vector initalDir, int index, int flock, double speed, bool predator = false) {
 		VecCopy(initalPosition, initalPos);
 		VecCopy(position, initalPos);
 		VecCopy(velocity, initalDir);
-		maxSpeed = speed;
+		attrib.maxSpeed = speed;
 		id = index;
 		flockId = flock;
 		isPredator = predator;
 		hunger = 0;
 	}
-	double maxSpeed, mass;
 	Vector initalPosition;
 	Vector position;
 	Vector velocity;
 	int id, flockId, hunger;
 	bool isPredator;
+	Attributes attrib;
 };
 
 struct Food {
