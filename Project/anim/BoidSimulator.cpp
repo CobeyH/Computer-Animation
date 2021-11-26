@@ -89,7 +89,8 @@ void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double de
 	}
 	calculateFlockCenter(center, flock);
 	avoidPredators(flock, predators, qTree);
-	Boid** foundBoids = (Boid**) malloc(flock->members.size() * sizeof(Boid*));
+	 
+	Boid** foundBoids = (Boid**) malloc((flock->members.size() + 1) * sizeof(Boid*));
 	for (std::list<Boid*>::iterator it = flock->members.begin(); it != flock->members.end(); ++it) {
 		Boid* nextBoid = (*it);
 		updatePosition(nextBoid, deltaTime);
@@ -97,7 +98,6 @@ void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double de
 		
 		Circle c = Circle(nextBoid->position[0], nextBoid->position[1], BOID_PERCEPTION_RANGE);
 		qTree->query(&c, foundBoids, flockSize);
-		foundBoids[flockSize] = NULL;
 			
 		
 		checkBoundries(nextBoid);
@@ -105,7 +105,7 @@ void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double de
 		
 	}
 	qTree->freeChildren();
-	// free(foundBoids); // TODO: Need to actually free this
+	free(foundBoids); // TODO: Need to actually free this
 }
 
 void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
@@ -175,7 +175,7 @@ void BoidSimulator::addCohesion(Boid* b, Vector center, Vector desiredVelocity) 
 	Vector cohesionFactor;
 	zeroVector(cohesionFactor);
 	VecSubtract(cohesionFactor, center, b->position);
-	VecScale(cohesionFactor, COHESION_STRENGTH);
+	VecScale(cohesionFactor, COHESION_STRENGTH * b->attrib.cohesion);
 	VecAdd(desiredVelocity, desiredVelocity, cohesionFactor);
 
 }
@@ -185,12 +185,14 @@ void BoidSimulator::addAlignment(Boid* b, Boid* closeBoids[], int size, Vector d
 	zeroVector(alignFactor);
 	for (int i = 0; i < size; i++) {
 		if (closeBoids[i]->id != b->id) {
-			VecAdd(alignFactor, alignFactor, closeBoids[i]->velocity);
+			alignFactor[0] += closeBoids[i]->velocity[0];
+			alignFactor[1] += closeBoids[i]->velocity[1];
+			//VecAdd(alignFactor, alignFactor, closeBoids[i]->velocity);
 		}
 	}
 	VecScale(alignFactor, 1.0 / (size - 1));
 	VecSubtract(alignFactor, alignFactor, b->velocity);
-	VecScale(alignFactor, ALIGNMENT_STRENGTH);
+	VecScale(alignFactor, ALIGNMENT_STRENGTH * b->attrib.align);
 	VecAdd(desiredVelocity, desiredVelocity, alignFactor);
 }
 
@@ -203,12 +205,12 @@ void BoidSimulator::addSeparation(Boid* b, Boid* closeBoids[], int size, Vector 
 			double distBetween = VecLength(vecBetween);
 			if (distBetween < 1) {
 				// Normalize then divide by distance between so that closer objects repell more.
-				VecScale(vecBetween, 1 / (distBetween * distBetween)); 
+				VecScale(vecBetween, 1 / (distBetween * distBetween));
 				VecSubtract(sepFactor, sepFactor, vecBetween);
 			}
 		}
 	}
-	VecScale(sepFactor, SEPARATION_STRENGTH);
+	VecScale(sepFactor, SEPARATION_STRENGTH * b->attrib.separation);
 	VecAdd(desiredVelocity, desiredVelocity, sepFactor);
 }
 
@@ -221,7 +223,6 @@ void BoidSimulator::addFoodAttraction(Boid* b, Vector desiredVelocity) {
 	if (nearbyFoodCount == 0) {
 		return;
 	}
-	foundFood[nearbyFoodCount] = NULL;
 	double nearestFoodDist = INT_MAX;
 	int nearestFoodIndex = 0;
 	for (int i = 0; i < nearbyFoodCount; i++) {
@@ -266,7 +267,7 @@ void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTre
 			VecNormalize(b->velocity);
 		}
 	}
-	//free(foundBoids);
+	free(foundBoids);
 }
 
 void BoidSimulator::calculateFlockCenter(Vector center, Flock* flock) {

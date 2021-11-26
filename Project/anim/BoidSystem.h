@@ -16,6 +16,7 @@ public:
 	int command(int argc, myCONST_SPEC char** argv);
 	// Extra methods
 	void generateInitalBoids(double numBoids);
+	void addEvolvedBoid(int flockId);
 private:
 	std::vector<Flock> flocks;
 	Flock* predators;

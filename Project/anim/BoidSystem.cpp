@@ -1,6 +1,8 @@
 #include "BoidSystem.h"
 #include "BaseSystem.h"
 #include <vector>
+#include <random>
+#include <functional>
 
 BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 	for (int i = 0; i < FLOCK_COUNT; i++) {
@@ -9,6 +11,10 @@ BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 	}
 	predators = new Flock();
 };
+
+double randNum(double min, double max) {
+	return min + (double)(rand()) / ((double)(RAND_MAX / (max - min)));
+}
 
 void getRandomDirection(Vector dir) {
 	double x = rand() % 100 - 50;
@@ -21,8 +27,8 @@ void getRandomDirection(Vector dir) {
 
 void getRandomPosition(Vector pos) {
 	// Generate random numbers from -4 to 5
-	double x = (double)(rand() % 800) / 100 - 4;
-	double y = (double)(rand() % 800) / 100 - 4;
+	double x = (double)(rand() % 1000) / 100 - 5;
+	double y = (double)(rand() % 1000) / 100 - 5;
 	//int z = (double)(rand() % 800) / 100 - 4;
 	int z = 0;
 	setVector(pos, x, y, z);
@@ -33,15 +39,26 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		flocks[i].members.clear();
 	}
 	// Create Normal Boids
-	for (int i = 0; i < numBoids; i++) {
-		Vector initalPosition, initalDirection;
-		getRandomPosition(initalPosition);
-		getRandomDirection(initalDirection);
-		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, 0.3 + (i % FLOCK_COUNT) * 0.4);
-		flocks[newBoid->flockId].members.push_back(newBoid);
+	for (int flockIndex = 0; flockIndex < FLOCK_COUNT; flockIndex++) {
+		double flockSpeed = randNum(0.5, 1.5);
+		double cohesion = randNum(0.5, 1.5);
+		double alignment = randNum(0.5, 1.5);
+		double separation = randNum(0.5, 1.5);
+		double mass = randNum(1, 10);
+		for (int i = 0; i < numBoids / FLOCK_COUNT; i++) {
+			Vector initalPosition, initalDirection;
+			getRandomPosition(initalPosition);
+			getRandomDirection(initalDirection);
+			Boid* newBoid = new Boid(initalPosition, initalDirection, i, flockIndex, flockSpeed);
+			newBoid->attrib.align = alignment;
+			newBoid->attrib.cohesion = cohesion;
+			newBoid->attrib.separation = separation;
+			newBoid->attrib.mass = mass;
+			flocks[flockIndex].members.push_back(newBoid);
+		}
 	}
 	// Create Predators
-	int numPredators = min(numBoids / 200 + 1, 5);
+	int numPredators = min(numBoids / 200 + 1, 3);
 	for (int i = 0; i < numPredators; i++) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
@@ -52,6 +69,10 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 	glutPostRedisplay();
 };
 
+void BoidSystem::addEvolvedBoid(int flockId) {
+	
+}
+
 void BoidSystem::getState(double* p) {
 	BoidState* state = (BoidState*) p;
 	state->flocks = &flocks;
@@ -60,8 +81,9 @@ void BoidSystem::getState(double* p) {
 
 void BoidSystem::setState(double* p) {
 	BoidSetState* state = (BoidSetState*) p;
-	flocks[state->toDelete->flockId].members.remove(state->toDelete);
-	
+	int flockId = state->toDelete->flockId;
+	flocks[flockId].members.remove(state->toDelete);
+	addEvolvedBoid(flockId);
 }
 
 void BoidSystem::reset(double time) {
