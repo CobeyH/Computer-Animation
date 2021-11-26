@@ -32,11 +32,11 @@ void BoidSimulator::updatePosition(Boid* b, double deltaTime) {
 
 void checkBoundries(Boid* b) {
 	for (int i = 0; i < 2; i++) {
-		if (b->position[i] < -SCREEN_EDGE + EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] + WALL_REPULSION;
+		if (b->position[i] < -SCREEN_EDGE ) {
+			b->position[i] +=  SCREEN_WIDTH;
 		}
-		else if (b->position[i] > SCREEN_EDGE - EDGE_MARGIN) {
-			b->velocity[i] = b->velocity[i] - WALL_REPULSION;
+		else if (b->position[i] > SCREEN_EDGE) {
+			b->position[i] -= SCREEN_WIDTH;
 		}
 	}
 }
@@ -105,7 +105,7 @@ void BoidSimulator::updateFlockMembers(Flock* flock, Flock* predators, double de
 		
 	}
 	qTree->freeChildren();
-	free(foundBoids); // TODO: Need to actually free this
+	free(foundBoids);
 }
 
 void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
@@ -131,15 +131,34 @@ void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
 	}
 }
 
+void BoidSimulator::printInfo(BoidState* state, double time) {
+	if (time < prevPrint + PRINT_INTERVAL) {
+		return;
+	}
+	prevPrint = time;
+	int numBoids = 0; double averageSpeed = 0;
+	for (std::vector<Flock>::iterator it = state->flocks->begin(); it != state->flocks->end(); ++it) {
+		for (std::list<Boid*>::iterator bIt = it->members.begin(); bIt != it->members.end(); ++bIt) {
+			numBoids++;
+			averageSpeed += (*bIt)->attrib.maxSpeed;
+		}
+	}
+	averageSpeed /= numBoids;
+	std::ofstream myFile;
+	myFile.open("boidAttrib.csv", std::ios_base::app);
+	myFile << time << "," << averageSpeed << "\n";
+}
+
 int BoidSimulator::step(double time) {
 	double deltaTime = time - prevTime;
 	if (deltaTime < 0) {
 		deltaTime = time;
 	}
+	
 	starvedBoids.clear();
 	BoidState* state = new BoidState();
 	m_object->getState((double*)state);
-
+	printInfo(state, time);
 	updateAllBoids(state, deltaTime);
 	for (auto it = starvedBoids.begin(); it != starvedBoids.end(); ++it) {
 		killBoid(*it);

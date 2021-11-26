@@ -6,6 +6,8 @@
 #include "FoodSystem.h"
 #include <vector>
 #include <thread>
+#include <iostream>
+#include <fstream>
 
 #define PREDATOR_STARVATION_THREASHOLD 0.25
 #define BOID_STARVATION_THREASHOLD 0.25
@@ -28,6 +30,8 @@
 #define SEPARATION_STRENGTH 0.02
 #define FOOD_ATTRACTION_STRENGTH 0.05
 
+#define PRINT_INTERVAL 5
+
 
 
 class BoidSimulator : public BaseSimulator {
@@ -36,16 +40,18 @@ public:
 	int step(double time);
 	int init(double time) {
 		double prevTime = 0;
+		prevPrint = 0;
 		return 0;
 	};
 	void display(GLenum mode = GL_RENDER);
 	void registerFoodSystem(BaseSystem* system);
 protected:
-	double prevTime;
+	double prevTime, prevPrint;
 	BaseSystem* m_object;
 	std::list<Boid*> starvedBoids;
 	BaseSystem* foodSystem;
 	QuadTree<Food>* foodQTree;
+	void printInfo(BoidState* state, double time);
 	void updateAllBoids(BoidState* state, double deltaTime);
 	void updateFlockMembers(Flock* flock, Flock* predators, double deltaTime);
 	void updatePosition(Boid* b, double deltaTime);

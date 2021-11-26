@@ -7,7 +7,7 @@ struct Attributes {
 };
 
 struct Boid {
-	Boid(Vector initalPos, Vector initalDir, int index, int flock, double speed, bool predator = false) {
+	Boid(Vector initalPos, Vector initalDir, int index, int flock, double speed, bool predator) {
 		VecCopy(initalPosition, initalPos);
 		VecCopy(position, initalPos);
 		VecCopy(velocity, initalDir);

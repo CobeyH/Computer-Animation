@@ -55,7 +55,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 			Vector initalPosition, initalDirection;
 			getRandomPosition(initalPosition);
 			getRandomDirection(initalDirection);
-			Boid* newBoid = new Boid(initalPosition, initalDirection, i, flockIndex, flockSpeed);
+			Boid* newBoid = new Boid(initalPosition, initalDirection, i, flockIndex, flockSpeed, false);
 			newBoid->attrib.align = alignment;
 			newBoid->attrib.cohesion = cohesion;
 			newBoid->attrib.separation = separation;
@@ -69,7 +69,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		Vector initalPosition, initalDirection;
 		getRandomPosition(initalPosition);
 		getRandomDirection(initalDirection);
-		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, true);
+		Boid* newBoid = new Boid(initalPosition, initalDirection, i, i % FLOCK_COUNT, 1, true);
 		predators->members.push_back(newBoid);
 	}
 	glutPostRedisplay();
@@ -95,7 +95,7 @@ void BoidSystem::addEvolvedBoid(int flockMissingBoid) {
 	setVector(position, -1, 0, 0);
 	zeroVector(rotation);
 
-	Boid* child = new Boid(position, rotation, flocks.at(flockMissingBoid).members.size(), flockMissingBoid, 0);
+	Boid* child = new Boid(position, rotation, flocks.at(flockMissingBoid).members.size(), flockMissingBoid, 0, false);
 
 	std::random_device rd;
 	std::mt19937 rng(rd());
@@ -112,7 +112,6 @@ void BoidSystem::addEvolvedBoid(int flockMissingBoid) {
 	int chosenSpeed = gen(rng);
 	child->attrib.maxSpeed = chosenSpeed ? b1->attrib.maxSpeed : b2->attrib.maxSpeed;
 	flocks.at(flockMissingBoid).members.push_back(child);
-
 
 }
 
