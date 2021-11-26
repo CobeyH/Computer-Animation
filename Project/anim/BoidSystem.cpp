@@ -2,7 +2,6 @@
 #include "BaseSystem.h"
 #include <vector>
 #include <random>
-#include <functional>
 
 BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 	for (int i = 0; i < FLOCK_COUNT; i++) {
@@ -11,6 +10,13 @@ BoidSystem::BoidSystem(const std::string& name) : BaseSystem(name) {
 	}
 	predators = new Flock();
 };
+
+int randNum(int min, int max) {
+	if (min == max) {
+		return min;
+	}
+	return min + (rand()) / ((RAND_MAX / (max - min)));
+}
 
 double randNum(double min, double max) {
 	return min + (double)(rand()) / ((double)(RAND_MAX / (max - min)));
@@ -26,9 +32,9 @@ void getRandomDirection(Vector dir) {
 }
 
 void getRandomPosition(Vector pos) {
-	// Generate random numbers from -4 to 5
-	double x = (double)(rand() % 1000) / 100 - 5;
-	double y = (double)(rand() % 1000) / 100 - 5;
+	// Generate random numbers from -5 to 5
+	double x = randNum(-5.0, 5.0);
+	double y = randNum(-5.0, 5.0);
 	//int z = (double)(rand() % 800) / 100 - 4;
 	int z = 0;
 	setVector(pos, x, y, z);
@@ -69,8 +75,45 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 	glutPostRedisplay();
 };
 
-void BoidSystem::addEvolvedBoid(int flockId) {
-	
+void BoidSystem::addEvolvedBoid(int flockMissingBoid) {
+	int fIndex1 = randNum(0, FLOCK_COUNT - 1);
+	int fIndex2 = randNum(0, FLOCK_COUNT - 1);
+	Flock* flock1 = &flocks.at(fIndex1);
+	Flock* flock2 = &flocks.at(fIndex2);
+
+	int bIndex1 = randNum(0, flock1->members.size() - 2);
+	int bIndex2 = randNum(0, flock2->members.size() - 2);
+	auto it1 = flock1->members.begin();
+	auto it2 = flock2->members.begin();
+
+	std::advance(it1, bIndex1);
+	std::advance(it2, bIndex2);
+	Boid* b1 = *it1;
+	Boid* b2 = *it2;
+
+	Vector position, rotation;
+	setVector(position, -1, 0, 0);
+	zeroVector(rotation);
+
+	Boid* child = new Boid(position, rotation, flocks.at(flockMissingBoid).members.size(), flockMissingBoid, 0);
+
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> gen(0, 1);
+
+	int chosenMass = gen(rng);
+	child->attrib.mass = chosenMass ? b1->attrib.mass : b2->attrib.mass;
+	int chosenCohesion = gen(rng);
+	child->attrib.cohesion = chosenCohesion ? b1->attrib.cohesion : b2->attrib.cohesion;
+	int chosenSeparation = gen(rng);
+	child->attrib.separation = chosenSeparation ? b1->attrib.separation : b2->attrib.separation;
+	int chosenAlignment = gen(rng);
+	child->attrib.align = chosenAlignment ? b1->attrib.align : b2->attrib.align;
+	int chosenSpeed = gen(rng);
+	child->attrib.maxSpeed = chosenSpeed ? b1->attrib.maxSpeed : b2->attrib.maxSpeed;
+	flocks.at(flockMissingBoid).members.push_back(child);
+
+
 }
 
 void BoidSystem::getState(double* p) {
@@ -81,6 +124,9 @@ void BoidSystem::getState(double* p) {
 
 void BoidSystem::setState(double* p) {
 	BoidSetState* state = (BoidSetState*) p;
+	if (state->toDelete->isPredator) {
+		return;
+	}
 	int flockId = state->toDelete->flockId;
 	flocks[flockId].members.remove(state->toDelete);
 	addEvolvedBoid(flockId);
