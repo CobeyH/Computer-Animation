@@ -100,17 +100,28 @@ void BoidSystem::addEvolvedBoid(int flockMissingBoid) {
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> gen(0, 1);
+	std::uniform_int_distribution<int> mutation(1, 10);
 
 	int chosenMass = gen(rng);
-	child->attrib.mass = chosenMass ? b1->attrib.mass : b2->attrib.mass;
+	double massMut = mutation(rng) == 10 ? (chosenMass ? 1 : -1) : 0;
+	child->attrib.mass = chosenMass ? b1->attrib.mass + massMut : b2->attrib.mass + massMut;
+
 	int chosenCohesion = gen(rng);
-	child->attrib.cohesion = chosenCohesion ? b1->attrib.cohesion : b2->attrib.cohesion;
+	double cohesionMut = mutation(rng) == 10 ? (chosenCohesion ? 0.1 : -0.1) : 0;
+	child->attrib.cohesion = chosenCohesion ? b1->attrib.cohesion + cohesionMut: b2->attrib.cohesion + cohesionMut;
+
 	int chosenSeparation = gen(rng);
-	child->attrib.separation = chosenSeparation ? b1->attrib.separation : b2->attrib.separation;
+	double separationMut = mutation(rng) == 10 ? (chosenSeparation ? 0.1 : -0.1) : 0;
+	child->attrib.separation = chosenSeparation ? b1->attrib.separation + separationMut : b2->attrib.separation + separationMut;
+
 	int chosenAlignment = gen(rng);
-	child->attrib.align = chosenAlignment ? b1->attrib.align : b2->attrib.align;
+	double alignMut = mutation(rng) == 10 ? (chosenAlignment ? 0.1 : -0.1) : 0;
+	child->attrib.align = chosenAlignment ? b1->attrib.align + alignMut : b2->attrib.align + alignMut;
+
 	int chosenSpeed = gen(rng);
-	child->attrib.maxSpeed = chosenSpeed ? b1->attrib.maxSpeed : b2->attrib.maxSpeed;
+	double speedMut = mutation(rng) == 10 ? (chosenSpeed ? 0.1 : -0.1) : 0;
+	child->attrib.maxSpeed = chosenSpeed ? b1->attrib.maxSpeed + speedMut: b2->attrib.maxSpeed + speedMut;
+
 	flocks.at(flockMissingBoid).members.push_back(child);
 
 }

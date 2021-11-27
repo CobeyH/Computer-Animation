@@ -7,6 +7,9 @@ BoidSimulator::BoidSimulator(const std::string& name, BaseSystem* target) : Base
 	Vector origin;
 	zeroVector(origin);
 	foodQTree = new QuadTree<Food>("qTree", 12, origin);
+	std::ofstream myFile;
+	myFile.open("boidAttrib.csv");
+	myFile << "time, speed, alignment, separation, cohesion\n";
 };
 
 void limitVelocity(Boid* b) {
@@ -18,11 +21,18 @@ void limitVelocity(Boid* b) {
 }
 
 void BoidSimulator::updatePosition(Boid* b, double deltaTime) {
-	b->hunger++;
-	if (b->hunger >= STARVATION  && !b->isPredator) {
-		starvedBoids.push_back(b);
-		return;
+	if (!b->isPredator) {
+		b->hunger++;
+		if (b->hunger >= STARVATION) {
+			starvedBoids.push_back(b);
+			return;
+		}
 	}
+	else {
+		b->hunger += 5;
+	}
+	
+	
 	limitVelocity(b);
 	Vector posOffset;
 	VecCopy(posOffset, b->velocity);
@@ -136,17 +146,23 @@ void BoidSimulator::printInfo(BoidState* state, double time) {
 		return;
 	}
 	prevPrint = time;
-	int numBoids = 0; double averageSpeed = 0;
+	int numBoids = 0; double averageSpeed = 0; double averageAlign = 0; double averageSep = 0; double averageCoh = 0;
 	for (std::vector<Flock>::iterator it = state->flocks->begin(); it != state->flocks->end(); ++it) {
 		for (std::list<Boid*>::iterator bIt = it->members.begin(); bIt != it->members.end(); ++bIt) {
 			numBoids++;
 			averageSpeed += (*bIt)->attrib.maxSpeed;
+			averageAlign += (*bIt)->attrib.align;
+			averageSep += (*bIt)->attrib.separation;
+			averageCoh += (*bIt)->attrib.cohesion;
 		}
 	}
 	averageSpeed /= numBoids;
+	averageAlign /= numBoids;
+	averageSep /= numBoids;
+	averageCoh /= numBoids;
 	std::ofstream myFile;
 	myFile.open("boidAttrib.csv", std::ios_base::app);
-	myFile << time << "," << averageSpeed << "\n";
+	myFile << time << "," << averageSpeed << "," << averageAlign << "," << averageSep << "," << averageCoh << "\n";
 }
 
 int BoidSimulator::step(double time) {
@@ -235,11 +251,12 @@ void BoidSimulator::addSeparation(Boid* b, Boid* closeBoids[], int size, Vector 
 
 void BoidSimulator::addFoodAttraction(Boid* b, Vector desiredVelocity) {
 	// Boids that are mostly full don't care about food
-	Food** foundFood = (Food**)malloc(50 * sizeof(Food*)); // TODO: HARDCODED 50
+	Food** foundFood = (Food**)malloc(50 * sizeof(Food*)); // TODO: this is the leak
 	Circle c = Circle(b->position[0], b->position[1], 2);
 	int nearbyFoodCount = 0;
 	foodQTree->query(&c, foundFood, nearbyFoodCount);
 	if (nearbyFoodCount == 0) {
+		free(foundFood);
 		return;
 	}
 	double nearestFoodDist = INT_MAX;
