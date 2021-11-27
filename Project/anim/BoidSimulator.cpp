@@ -332,8 +332,9 @@ void BoidSimulator::display(GLenum mode) {
 	//	glVertex3dv(temp->position);
 	//	glEnd();
 	//}
+	//if (prevTime > 0) {
+	//	temp->display();
+	//}
 
-	/*for (QuadTree* qTree : quadTrees) {
-		qTree->display();
-	}*/
+	
 }

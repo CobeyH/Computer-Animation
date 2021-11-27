@@ -113,7 +113,7 @@ void QuadTree<T>::display(GLenum mode) {
 
 	if (!divided) {
 		glBegin(GL_LINE_LOOP);
-		glVertex3d(center[0] + length/2, center[1] + length/2, 0);
+		glVertex3d(center[0] + length / 2, center[1] + length/2, 0);
 		glVertex3d(center[0] + length / 2, center[1] - length / 2, 0);
 		glVertex3d(center[0] - length / 2, center[1] - length / 2, 0);
 		glVertex3d(center[0] - length / 2, center[1] + length / 2, 0);

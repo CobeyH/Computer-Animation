@@ -92,7 +92,7 @@ void BoidSystem::addEvolvedBoid(int flockMissingBoid) {
 	Boid* b2 = *it2;
 
 	Vector position, rotation;
-	setVector(position, -1, 0, 0);
+	setVector(position, -5.99, 5.99, 0);
 	zeroVector(rotation);
 
 	Boid* child = new Boid(position, rotation, flocks.at(flockMissingBoid).members.size(), flockMissingBoid, 0, false);
@@ -194,7 +194,7 @@ void BoidSystem::display(GLenum mode) {
 	for (int i = 0; i < flocks.size(); i++) {
 		switch (i) {
 		case 0:
-			set_colour(1, 1, 0);
+			set_colour(0, 0, 1);
 			break;
 		case 1:
 			set_colour(0, 1, 0);
