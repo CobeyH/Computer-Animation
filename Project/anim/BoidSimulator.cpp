@@ -4,15 +4,19 @@
 
 BoidSimulator::BoidSimulator(const std::string& name, BaseSystem* target) : BaseSimulator(name), m_object(target) {
 	prevTime = 0;
+	averageBoidSpeed = 1;
 	Vector origin;
 	zeroVector(origin);
 	foodQTree = new QuadTree<Food>("qTree", 12, origin);
 	std::ofstream myFile;
 	myFile.open("boidAttrib.csv");
-	myFile << "time, speed, alignment, separation, cohesion\n";
+	myFile << "time, speed, alignment, separation, cohesion, mass\n";
 };
 
-void limitVelocity(Boid* b) {
+void BoidSimulator::limitVelocity(Boid* b) {
+	if (b->isPredator) {
+		b->attrib.maxSpeed = averageBoidSpeed + 0.1;
+	}
 	double speed = VecLength(b->velocity);
 	if (speed > b->attrib.maxSpeed) {
 		VecScale(b->velocity, 1.0 / speed);
@@ -22,7 +26,7 @@ void limitVelocity(Boid* b) {
 
 void BoidSimulator::updatePosition(Boid* b, double deltaTime) {
 	if (!b->isPredator) {
-		b->hunger++;
+		b->hunger = b->hunger + b->attrib.maxSpeed;
 		if (b->hunger >= STARVATION) {
 			starvedBoids.push_back(b);
 			return;
@@ -57,7 +61,7 @@ void BoidSimulator::killBoid(Boid* b) {
 	m_object->setState((double*)&state);
 }
 
-void BoidSimulator::checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize) {
+void BoidSimulator::checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize, int boidsPerFlock) {
 	// Predators will not hunt if they are not hungry
 	if (p->hunger < PREDATOR_STARVATION_THREASHOLD * STARVATION) {
 		return;
@@ -67,6 +71,13 @@ void BoidSimulator::checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize
 	}
 	double closestBoidDistance = INT_MAX;
 	int closestBoidIndex = 0;
+	double flockMass = 0;
+	for (int i = 0; i < flockSize; i++) {
+		flockMass += closeBoids[i]->attrib.mass;
+	}
+	if (flockMass > 5) { 
+		return;
+	}
 	for (int i = 0; i < flockSize; i++) {
 		Boid* nextBoid = closeBoids[i];
 		double x = nextBoid->position[0] - p->position[0];
@@ -126,9 +137,9 @@ void BoidSimulator::updateAllBoids(BoidState* state, double deltaTime) {
 	}
 
 	
-	//for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
-	//	updateFlockMembers(&(*itFlock), state->predators, deltaTime);
-	//}
+	/*for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
+		updateFlockMembers(&(*itFlock), state->predators, deltaTime);
+	}*/
 
 	std::vector<std::thread> t;
 	for (std::vector<Flock>::iterator itFlock = state->flocks->begin(); itFlock != state->flocks->end(); ++itFlock) {
@@ -146,7 +157,7 @@ void BoidSimulator::printInfo(BoidState* state, double time) {
 		return;
 	}
 	prevPrint = time;
-	int numBoids = 0; double averageSpeed = 0; double averageAlign = 0; double averageSep = 0; double averageCoh = 0;
+	int numBoids = 0; double averageSpeed = 0; double averageAlign = 0; double averageSep = 0; double averageCoh = 0; double averageMass = 0;
 	for (std::vector<Flock>::iterator it = state->flocks->begin(); it != state->flocks->end(); ++it) {
 		for (std::list<Boid*>::iterator bIt = it->members.begin(); bIt != it->members.end(); ++bIt) {
 			numBoids++;
@@ -154,15 +165,18 @@ void BoidSimulator::printInfo(BoidState* state, double time) {
 			averageAlign += (*bIt)->attrib.align;
 			averageSep += (*bIt)->attrib.separation;
 			averageCoh += (*bIt)->attrib.cohesion;
+			averageMass += (*bIt)->attrib.mass;
 		}
 	}
 	averageSpeed /= numBoids;
 	averageAlign /= numBoids;
 	averageSep /= numBoids;
 	averageCoh /= numBoids;
+	averageMass /= numBoids;
 	std::ofstream myFile;
 	myFile.open("boidAttrib.csv", std::ios_base::app);
-	myFile << time << "," << averageSpeed << "," << averageAlign << "," << averageSep << "," << averageCoh << "\n";
+	myFile << time << "," << averageSpeed << "," << averageAlign << "," << averageSep << "," << averageCoh << "," << averageMass << "\n";
+	averageBoidSpeed = averageSpeed;
 }
 
 int BoidSimulator::step(double time) {
@@ -200,7 +214,7 @@ void BoidSimulator::updateDirection(Boid* b, Vector center, Boid* closeBoids[], 
 	if (b->hunger > STARVATION * BOID_STARVATION_THREASHOLD) {
 		addFoodAttraction(b, steeringForce);
 	}
-	VecScale(steeringForce, TURNING_RATE);
+	VecScale(steeringForce, TURNING_RATE / (b->attrib.maxSpeed * b->attrib.mass));
 	VecAdd(b->velocity, steeringForce, b->velocity);
 	VecNormalize(b->velocity);
 	
@@ -293,7 +307,7 @@ void BoidSimulator::avoidPredators(Flock* normalBirds, Flock* predators, QuadTre
 		int flockSize = 0;
 		qTree->query(&c, foundBoids, flockSize);
 		Boid* p = *predatorIt;
-		checkPredatorFood(p, foundBoids, flockSize);
+		checkPredatorFood(p, foundBoids, flockSize, normalBirds->members.size());
 		for (int i = 0; i < flockSize; i++) {
 			Boid* b = foundBoids[i];
 			Vector displacement;

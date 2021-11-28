@@ -50,7 +50,7 @@ void BoidSystem::generateInitalBoids(double numBoids) {
 		double cohesion = randNum(0.5, 1.5);
 		double alignment = randNum(0.5, 1.5);
 		double separation = randNum(0.5, 1.5);
-		double mass = randNum(1, 10);
+		double mass = randNum(0.5, 1.5);
 		for (int i = 0; i < numBoids / FLOCK_COUNT; i++) {
 			Vector initalPosition, initalDirection;
 			getRandomPosition(initalPosition);
@@ -194,7 +194,7 @@ void BoidSystem::display(GLenum mode) {
 	for (int i = 0; i < flocks.size(); i++) {
 		switch (i) {
 		case 0:
-			set_colour(0, 0, 1);
+			set_colour(1, 1, 0);
 			break;
 		case 1:
 			set_colour(0, 1, 0);

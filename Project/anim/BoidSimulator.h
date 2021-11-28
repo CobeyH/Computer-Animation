@@ -11,7 +11,7 @@
 
 #define PREDATOR_STARVATION_THREASHOLD 0.25
 #define BOID_STARVATION_THREASHOLD 0.25
-#define STARVATION 3000
+#define STARVATION 2000
 
 #define PREDATOR_INFLUENCE_RANGE 0.5
 #define BOID_PERCEPTION_RANGE 3
@@ -46,7 +46,7 @@ public:
 	void display(GLenum mode = GL_RENDER);
 	void registerFoodSystem(BaseSystem* system);
 protected:
-	double prevTime, prevPrint;
+	double prevTime, prevPrint, averageBoidSpeed;
 	BaseSystem* m_object;
 	std::list<Boid*> starvedBoids;
 	BaseSystem* foodSystem;
@@ -62,7 +62,8 @@ protected:
 	void addSeparation(Boid* b, Boid** closeBoids, int size, Vector desiredVelocity);
 	void addFoodAttraction(Boid* b, Vector desiredVelocity);
 	void avoidPredators(Flock* normalBirds, Flock* predators, QuadTree<Boid>* qTree);
-	void checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize);
+	void checkPredatorFood(Boid* p, Boid* closeBoids[], int flockSize, int boidsPerFlock);
 	void killBoid(Boid* b);
+	void limitVelocity(Boid* b);
 };
 
