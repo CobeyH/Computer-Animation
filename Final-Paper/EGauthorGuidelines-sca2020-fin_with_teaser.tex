@@ -157,6 +157,11 @@ Once the parents are selected, a process called crossover occurs \textbf{CITE HE
 With crossover complete, the Boids technically evolve, but each time the simulation runs there are only as many possible values for each attribute as there are flocks. This means that simulations with 3 flocks only have $5^3 = 125$ possible Boid permutations. It's possible that none of these permutations is optimal for the provided environment.
 \subsection{QuadTrees}
 \label{qtree}
+All the main mechanics of the system have been discussed at this point, but the performance of the system is lacking. The main problem is the number of entities that each Boid needs to consider to calculate its forces.  At present, each Boid needs to calculate the distance to each other Boid to calculate cohesion, separation and alignment forces. The predator also needs to consider the distance to every Boid form every flock to find the closest target and apply repulsive forces to the Boids.
+\par
+A solution used for this project involved the introduction of a spacial division data structure called QuadTrees. QuadTrees are a tree data structure in which each node can contain references to four other nodes, called children nodes. Additionally, the node can contain a list of Boids within it, a center point of the node, and the width/height.
+\par
+On each simulation step, 
 \section{Evaluation}
 \section{Conclusion}
 \printbibliography                
