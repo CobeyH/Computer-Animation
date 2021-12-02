@@ -4,6 +4,7 @@
 
 \documentclass{egpubl}
 \usepackage{sca2020}
+\usepackage{algpseudocode}
  
 % --- for  Annual CONFERENCE
 % \ConferenceSubmission   % uncomment for Conference submission
@@ -94,17 +95,62 @@ It is worth noting that the multiple independant flock approach loses some granu
 \subsubsection{Predators}
 \label{hunting}
 In order for evolution to occur, the boids needed a mechanism to determine which Boids were the weakest. This was accomplished by introducting predators into the system that actively hunt and kill Boids. The predator isn't a member of a flock and is therefore not influenced by the flocking forces described in section \ref{forces}. Instead, the predator travels in a straight line until it's hunger increases above 20\% of its maximum hunger amount. Hunger is described in a greater detail in section \ref{hunger}. Once this threshold is reached, the predator switches into a hunting state and will try to catch food. On each step, every predator calculates the closest Boid to its current location and determines the vector between itself and the prey. A portion of that vector is added to the predator's velocity similar to the "turning rate" method described previously. If a predator is within a small range of a Boid, then the boid is killed and the predators hunger bar is reset to 0. 
+\par
+The Boids were also given a mechanism to escape the predator. Every simulation tick each predator generates a list of Boids that are within its perception radius. A force is then applied to each Boid in the direction of the vector between the predator and the Boid. At first glance this approach seems counter intuitive that the predator is looking for Boids instead of each Boid checking for a list of predators. However, due to the optimization method that will be described in section \ref{qtree}, it was vastly more efficient to check predator interactions in this way and it doesn't change the overall outcome of the simulation.
 \subsection{Working as a Flock}
 Everything described so far in this project has discussed how flocking behaviour is created, but doesn't provide a motivation for why the Boids should create flocks. This project aimed to provide motivation for the Boids to flock instead of enforcing arbitrary rules on the agents. This section discusses how the Boid behaviour was modified to provide realistic insentives for Boids to group together.
 \subsubsection{Herd Safety}
+\label{herdImmunity}
 In nature, the main reason for birds to flock together is to outnumber predators which increases their survival chance. This project emulated this behaviour by implementing a deterant for predators hunting habits based on the density of Boids.
 \par
 An extension of the predator hunter behaviour was created that prevented the predator from persuing Boids that were part of a large local group. The predator looks at Boids one at a time from each flock, starting at the closest and working outwards until a target is found. For each Boid, a radius is drawn around the potential target and a list of Boids that are also members of that flock is returned. The total mass of these boids is added up and compared to a threashold level. If the mass is below the threshold then the predator stops looking for prey and uses that target to calculate a change in velocity as described in section \ref{hunting}. If the total mass is above the threshold then it continues on to the next potential target. The target is recalculated each tick of the simulation which means the predator can search for new prey if its first target is too fast to catch or joins together with a larger group of its flock before the predator can catch it.
 \subsubsection{Hunger and Food}
 \label{hunger}
-
+The saftey in numbers stragety improves the realism of the animation but it violates the goal of not perscribing an optimal strategy. At this point there is no disadvantage to creating large groups and no insentive to leave the group. To fix this problem, a hunger system was introduced that forces Boids to seek food in order to survive. This system works by adding a hunger level to each Boid that is tracked interally along with randomly generated food for the Boids to eat. On every tick of the simulation, the Boid's hunger increases proportionally to its speed. That means that fast Boids will starve faster but are also more likely to be able to outrun a predator. 
+\par
+Once the Boid's hunger exceeds 20\% of it's maximum hunger, it starts looking for food in its immediate surroundings. This mechanic works similarly to the hunting algorithm of the predators described in section \ref{hunting}. On each simulation step, each Boid that has hunger above the threshold looks for the nearest food to itself. A force is then applied to the Boid in the direction of the food proportional to how hungry the Boid is. The force starts small but grows exponentially as the Boid gets hungrier. This force is added to the fundamental forces from section \ref{forces} before the turning rate and speed limiting are applied.
+\subsection{Algorithm Overview}
+This section shows pseudocode for the algorithms described in the previous sections. The first algorithm shows a very broad overview of the velocity update on each Boid for each timestep. Note that this algorithm has been simplified and is missing the force calculation for avoiding predators. 
+\begin{algorithmic}
+\For{Each Boid}
+    \State $boid.velocity \gets randomVelocity$
+\EndFor
+\While{true}
+\For{Each Flock}
+    \For{Each Boid b in Flock}
+        \State $b.hunger \gets b.hunger + 1$
+        \State $desiredVel \gets b.velocity$
+        \State $desiredVel \gets desiredVel + cohesion$
+        \State $desiredVel \gets desiredVel + separation$
+        \State $desiredVel \gets desiredVel + alignment$
+        \If{b.hunger > 20}
+            \State $desiredVel \gets desiredVel + foodForce$
+        \EndIf
+        \State $velChange \gets desiredVel - b.velocity$
+        \State $b.velocity \gets b.velocity + velChange * turnrate$
+        \State $b.velocity \gets \frac{b.velocity}{|b.velocity|} * b.turnRate$
+    \EndFor
+\EndFor
+\EndWhile
+\end{algorithmic}
 \subsection{Evolution}
+With all the features in place to facilitate the evolution, the only remaining step was to create a system to spawn new offspring. In nature, populations of predators and prey are kept in balance. When the predator population increases too much then they begin to starve due to lack of food which leads to an exposion in the population of the prey species as the predators die off. This increases in food bolsters the predator population in a cycle until an equalibrium is reached. This system works in nature because habitats are very large which means that finding prey becomes more difficult as the population the of prey species gets lower. However, the simulation in this project is in a small space which means that locating prey is simple. There are no burrows for the prey to hide in or camoflage of any kind. 
+\par
+Due to the small size of the environment, a straightforward approach was taken. Each time a boid died from starvation or from a predator, a new Boid would be created on the next simulation step. This isn't very realistic, but provides a good enough model for demonstrating evolution without worrying about the entire predator or prey population dying from starvation. This addresses the question of when to create new boids but not how they should be created. Before discussing that topic, the boids needed properties that could evolve. These properties were created as follows:
+\begin{enumerate}
+    \item Scalar multiplier for cohesion. This multiplies the force that the Boid experiences from cohesion towards other Boids. The cohesion calculation is still computed as discussed in section \ref{forces}, but the total cohesive force is multipied by the scalar before it is applied to the boid.
+    \item Scalar multiplier for separation. This works identically to the scalar for cohesion, but it is applied to the sepration force experiences by the Boid.
+    \item Scalar multiplier for allignment. This works identically to previous two multipliers but it is applied to the allignment force applied to the Boid.
+    \item Speed. This has been references in previous sections but in this section it is turned into a dynamic property of the Boid instead of a constant. The speed of the Boid is added to its hunger every step, resulting in fast Boids starving quicker. However, Boids with higher speed can move faster.
+    \item Mass. The mass of a Boid doesn't do anything by itself but it can alter the behaviour of the Boids interacting with a flock. As described in section \ref{herdImmunity}, the predator cannot hunt groups of Boids that are above a certain mass. This mass is calculated by summing the individual masses of each of the Boids in the group. However, the turn rate of the Boids is divided by their mass which results in large Boids turning at a slower rate. This makes it more difficult for them to avoid predators.
+\end{enumerate}
+The reason for creating these trade-offs was to try to create several viable strategies for the Boids. For example, fast Boids could survive by outrunning the predators with their superior speed and turning rate, while slow Boids with large mass could flock tightly together to prevent the predator from selecting them as a valid target. There is also a tradeoff in separation and cohesion. Tightly separated Boids are more likely to reach the threshold mass required to scare away the predator, but tightly groups Boids are also more likely to be eaten in rapid succession by a predator if the group splits up.
+\par
+This result seemed much more interesting than a clearly defined result emerging. In the inital prototype, no disadvantage was given for speed which caused the boid speed to increase forever until the simulation looked very unnatural. 
+\par
+With all the properties of the Boids it is finally possible to create evolution. To start, a modification was made to the algorithm described before that initalized each of the flocks with random attributes. Each flock had all of its members initalized to the same
 \subsection{QuadTrees}
+\label{qtree}
 \section{Evaluation}
 \section{Conclusion}
 \printbibliography                
