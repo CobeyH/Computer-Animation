@@ -75,6 +75,9 @@ If a boid dies, either from starvation or from a predator boid, then a new boid 
 \par
 This method produced the desired results in which the average value of each attribute would increase or decrease over time until the optimal value was found for each. \textbf{FINISH RESULTS} 
 \section{Introduction}
+Evolution has played a huge part in moving humanity to where it is today. This force is omnipresent, but difficult to observe on a human time-scale. Additionally, a lot of evolution simulators look at the properties of an individual as appose to looking at evolution of an entire species.
+\par
+This project seeks to solve both these problems by creating a multi-agent system in which the individual's properties effect other members of the species.
 \section{Related Work}
 The majority of this project was created from scratch with inspiration drawn from real life. However, several sources were used to create the initial boid behaviour and perform performance optimizations to increase the number of boids the application could support.
 \par
@@ -87,6 +90,24 @@ The groundwork of the project uses boid simulation to create interesting flocks.
 \par
 Every 0.01 seconds the three fundamental forces are recalculated for each Boid and added to the velocity of each Boid. This created two problems that had to be addressed: the velocity would increase without bound which created unnatural movement and the boids would instantly change their velocity to the new direction. The first problem was solved by implementing a maximum velocity for the boids. After the velocity change was calculated and added to the current velocity of the Boid, the totally velocity vector is normalized to create a unit vector in the direction of the Boids movement. This unit vector is then scaled by the maximum allowed velocity to create a vector in the direct direction and with a fixed maximum magnitude. 
 \par
+\begin{figure}[htb]
+  \centering
+  % the following command controls the width of the embedded PS file
+  % (relative to the width of the current column)
+  \includegraphics[width=.8\linewidth]{basicFlocks}
+  % replacing the above command with the one below will explicitly set
+  % the bounding box of the PS figure to the rectangle (xl,yl),(xh,yh).
+  % It will also prevent LaTeX from reading the PS file to determine
+  % the bounding box (i.e., it will speed up the compilation process)
+  % \includegraphics[width=.95\linewidth, bb=39 696 126 756]{sampleFig}
+  %
+  \parbox[t]{.9\columnwidth}{\relax
+        This image shows a basic flocking pattern created by the fundamental forces.
+           }
+  %
+  \caption{\label{fig:firstExample}
+           Basic Flocking.}
+\end{figure}
 To fix the Boids turning too rapidly, a solution called "turn rate" was created that would take a portion of the desired velocity update. The system starts with the current velocity of the Boid and the velocity of the boid that was calculated after adding the three fundamental forces. The difference between these vectors is computed to get the change in velocity, which is then scaled by a fraction such as 1/10 to get a portion of the desired velocity change. This change is then added to the current velocity of the Boid to create a final result. This system is ideal because it is simple and computationally inexpensive, but it suffers from creating a variable turn rate depending on the the magnitude of the velocity change. If the Boids desired velocity is significantly different than its current velocity than it will turn faster compared to a Boid that is travelling at a velocity that is close to its desired velocity. If a constant turn rate is desired then the velocity change could be normalized and scaled by a constant using the method described for velocity limiting. For this project, the computation cost of normalizing the turn rate was deemed too expensive so a dynamic turn rate was used.
 \subsubsection{Multiple Flocks}
 With the basic Boid implementation complete, this system needed to be further extended with the ability to add multiple flocks of Boids. This feature is important for working towards an evolution simultor and provides several other benifits to the overall system. Creating multilpe flocks is a relatively simple procedure that involved splitting the desired number of Boids into several equal sized groups. Each flock then updates its velocity every time step based on nearby members of their own flock. This provides a huge advantage of reducing the number of nearby Boids that each individual Boid needs to consider. The nature of the Boid algorithm is $O(n^2)$ which means that if there are $n$ Boids created then each Boid needs to perform $n$ checks. This means that a system with 1000 boids would need to perform $1000 * 1000 =  1,000,000$ checks per tick. Using an example of 5 flocks we can see how having multiple independant flocks can reduce the number of checks per tick. If the 1000 boids were divided between 5 flocks then each Boid would only need to check 199 other boids. This would result in $200 * 200 * 5 = 200,000$ checks per tick. This simple division creates a 5x improvement in the number of checks that are needed per tick in this case.
@@ -167,6 +188,21 @@ Once all the Boids are inserted into the QuadTree, the tree can be queried to fi
 \par
 This query function converts the algorithm from a $O( n^2 )$ into a $O(n * log_2{n})$. That means that a system using 1000 Boids would go from computing $1000 * 1000 = 1,000,000$ checks to using $1000 * log_2{1000} \approx 10,000$ which is a 100x performance improvement. The QuadTree was also made to work with generic objects that have a position property. This allowed the food system to use QuadTrees to save on Boids needing to calculate the distance to every item of food.
 \section{Evaluation}
+In order to evaluate the project, the execution environment must first be understood. For this project, all simulations were compiled and run on a Windows 10 desktop computer with a Ryzen 5 3600 CPU, a RX 5700XT GPU made by AMD, and 16GB of 3600Ghz RAM.
+\par
+This project contained a large number of input parameters that can be tuned to produce different results. Some of these include the following
+\begin{itemize}
+    \item The range of default values provided to the Boids for mass, separation, alignment, cohesion and speed.
+    \item The perception radius of the predator looking for boids to eat and the perception radius of the Boids looking for food.
+    \item The range in which Boids have their fundamental forces altered by other Boids.
+    \item The quantity of food in the environment.
+    \item The rate at which predators and Boids get hungry.
+    \item The threshold value for mass that prevents a predator from targetting a flock of Boids. 
+    \item The strength of the force that pushes Boids away from the predator.
+    \item The mutation rate used when creating offspring.
+    \item The number of Boids and predators at the start.
+\end{itemize}
+Each of these parameters will effect how the simulation looks and how the properties of the Boids evolve over time. Due to the number of changable parameters and the number of values each of these parameters can have, it is impossible to demonstrate the results for each of them. However, this section will show the results of several hand-picked examples that show general trends to get an idea of how the system works.
 \section{Conclusion}
 \printbibliography                
 \end{document}
