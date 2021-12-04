@@ -5,6 +5,7 @@
 \documentclass{egpubl}
 \usepackage{sca2020}
 \usepackage{algpseudocode}
+\usepackage{float}
  
 % --- for  Annual CONFERENCE
 % \ConferenceSubmission   % uncomment for Conference submission
@@ -203,6 +204,60 @@ This project contained a large number of input parameters that can be tuned to p
     \item The number of Boids and predators at the start.
 \end{itemize}
 Each of these parameters will effect how the simulation looks and how the properties of the Boids evolve over time. Due to the number of changable parameters and the number of values each of these parameters can have, it is impossible to demonstrate the results for each of them. However, this section will show the results of several hand-picked examples that show general trends to get an idea of how the system works.
+\par
+With the introduction of QuadTrees and multi-threading, the system can handle around 1000 Boids split into 5 flocks. An example frame of this simulation can be seen in the figure below. It can be observed that Boids are generally flocking with members of their own colour and avoiding the predator (black) Boids. In this run of the program, the yellow Boids had a low inital speed which can be seen by the yellow Boid that is very close to the predator in the middle of the screen.
+\begin{figure}[H]
+  \centering
+  % the following command controls the width of the embedded PS file
+  % (relative to the width of the current column)
+  \includegraphics[width=.8\linewidth]{final}
+  % replacing the above command with the one below will explicitly set
+  % the bounding box of the PS figure to the rectangle (xl,yl),(xh,yh).
+  % It will also prevent LaTeX from reading the PS file to determine
+  % the bounding box (i.e., it will speed up the compilation process)
+  % \includegraphics[width=.95\linewidth, bb=39 696 126 756]{sampleFig}
+  %
+  \parbox[t]{.9\columnwidth}{\relax
+    This image shows an example of a simulation step in the final product.
+           }
+  %
+  \caption{\label{fig:finalResult}
+           Final Result.}
+\end{figure}
+\par
+To see more clear results from the evolution, a CSV file was created that contained the average Boid attributes over time. These attributes were logged every 30 seconds and loaded into spreadsheet software to generate a graph over time. The next figure shows the attributes over time with the configuration variables considered "normal" for the system. The simulation was run with 5 flocks of 50 boids each for 45 minutes. After this point the attributes leveled off.
+\begin{figure}[H]
+  \centering
+  % the following command controls the width of the embedded PS file
+  % (relative to the width of the current column)
+  \includegraphics[width=.8\linewidth]{firstEvolution}
+  % replacing the above command with the one below will explicitly set
+  % the bounding box of the PS figure to the rectangle (xl,yl),(xh,yh).
+  % It will also prevent LaTeX from reading the PS file to determine
+  % the bounding box (i.e., it will speed up the compilation process)
+  % \includegraphics[width=.95\linewidth, bb=39 696 126 756]{sampleFig}
+  %
+  \parbox[t]{.9\columnwidth}{\relax
+    An example of the evolution process.
+           }
+  %
+  \caption{\label{fig:firstEvo}
+           First Evolution.}
+\end{figure}
+This figure shows that this configuration of the parameters favours a higher average mass, cohesion and separation while discouraging alignment between the Boids. In the next example, the rate of starvation was increased so that Boids starve three times faster. This forces Boids to leave the flock more often in order to find food. In this run, speed become severly detrimental because of the starvation multiplier that speed causes. It was better for the Boids to move slowly as a group instead of increasing their speed to find food more quickly.  
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.8\linewidth]{starvationEvolution}
+  \parbox[t]{.9\columnwidth}{\relax
+    An example of the evolution process with faster starvation.
+           }
+  %
+  \caption{\label{fig:secondEvo}
+           Fast Starvation Evolution.}
+\end{figure}
+\section{Future Work}
+In the future, this system can be greatly exanded and is contining to see active development. The biggest area of future work lies in the process of creating offspring in the evolution process. At this point the child creation process isn't very realistic since the parent are chosen at random. It could be improved by considering Boid proximity when creating children and also creating a fitness function to decide which Boids get to reproduce. This could work by considering the quantity of food that Boids have eaten recently and increasing the likelyhood of Boids reproducing based on their ability to find food. Additional parameters could also be added that give Boids a tunable value for their breeding priority. Lastly, the Boids could be given a family structure and a sex that prevents Boids from breeding with other Boids in their immediate family or with members of the same sex. This would increase the genetic diversity and be more realistic to how reproduction works in real life. 
 \section{Conclusion}
+In this project, a multi-agent evolution simulator was created using Boids. Given a set of inital parameters, novel and unpredictable results are created through an evolution process. While it has its limitations, the overall number of Boids in the system is greater than originally expected due to the effectivness of the optimization techniques employed.
 \printbibliography                
 \end{document}
