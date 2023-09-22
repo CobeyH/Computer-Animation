@@ -11,6 +11,7 @@ Forward Euler, Symplectic Euler and Verlet integration are all supported.
 
 ## Assignment 3
 The third assignment uses inverse kinematics to model a human character drawing on a chalkboard. The hermite spline class in re-used to create a shape on the chalkboard for the human model to draw. The end effector of the human is moved along the spline, while the wrist, elbow and shoulder rotate using inverse kinematics to create realistic motion.
+
 ![IK_splines](https://github.com/CobeyH/Computer-Animation/assets/32989729/0c5afb63-0d52-49c4-bc18-036d7917f23e)
 
 
